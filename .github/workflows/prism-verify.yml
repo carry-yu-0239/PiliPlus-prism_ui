@@ -30,6 +30,11 @@ jobs:
         with:
           distribution: zulu
           java-version: "17"
+      - name: Install native-asset test dependencies
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends pkg-config libgtk-3-dev libx11-dev libxi-dev
       - name: Isolate HOME and pub cache
         shell: bash
         run: |
