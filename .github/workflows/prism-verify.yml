@@ -1,0 +1,84 @@
+name: Prism verification (isolated, non-release)
+
+on:
+  pull_request:
+    branches: [main]
+  push:
+    branches: [feat/prism-p0-foundation, "feat/prism-*"]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: prism-verify-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  android-dev:
+    name: Flutter 3.47.9 baseline and Android dev APK
+    runs-on: ubuntu-latest
+    timeout-minutes: 90
+    env:
+      PUB_CACHE: ${{ runner.temp }}/prism-home/.pub-cache
+      PRISM_PROFILE_METRICS: "false"
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          fetch-depth: 1
+      - name: Set up Java 17
+        uses: actions/setup-java@v4
+        with:
+          distribution: zulu
+          java-version: "17"
+      - name: Isolate HOME and pub cache
+        shell: bash
+        run: |
+          mkdir -p "${{ runner.temp }}/prism-home/.pub-cache"
+          echo "HOME=${{ runner.temp }}/prism-home" >> "$GITHUB_ENV"
+          echo "PUB_CACHE=${{ runner.temp }}/prism-home/.pub-cache" >> "$GITHUB_ENV"
+      - name: Install frozen Flutter SDK without shared cache
+        uses: subosito/flutter-action@v2
+        with:
+          flutter-version: "3.47.9"
+          channel: stable
+          cache: false
+          pub-cache-path: ${{ runner.temp }}/prism-home/.pub-cache
+      - name: Record SDK and original dependency lock
+        shell: bash
+        run: |
+          flutter --version
+          dart --version
+          git -C "$FLUTTER_ROOT" rev-parse HEAD
+          sha256sum pubspec.lock
+          git status --short
+      - name: Apply original Android SDK and package patch chain
+        shell: pwsh
+        run: ./lib/scripts/patch.ps1 android
+      - name: Check patch and lockfile status
+        shell: bash
+        run: |
+          git -C "$FLUTTER_ROOT" status --short
+          git status --short
+          git diff -- pubspec.lock
+          if ! git diff --quiet -- pubspec.lock; then
+            echo "::error::pubspec.lock drift after baseline patch/pub get"
+            exit 1
+          fi
+      - name: Analyze (retain baseline diagnostics)
+        shell: bash
+        run: flutter analyze --no-fatal-infos
+      - name: Run existing tests
+        shell: bash
+        run: flutter test
+      - name: Build unsigned Android development APK
+        shell: bash
+        run: flutter build apk --release --split-per-abi --android-project-arg dev=1 --no-pub
+      - name: Upload development APK (never publish release)
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: prism-android-dev-${{ github.sha }}
+          path: build/app/outputs/flutter-apk/*.apk
+          if-no-files-found: error
+          retention-days: 7
