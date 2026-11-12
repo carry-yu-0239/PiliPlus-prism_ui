@@ -38,7 +38,7 @@ The CI records Flutter/Dart/engine, the SDK Git HEAD, lockfile hash, patch outpu
 
 | Surface | Known implementation / source | Risk and initial policy |
 |---|---|---|
-| VOD and video-card player | `lib/pages/video/` and `media_kit_video` locked fork | Texture/native rendering may not be replayable by Prism's `_Replay._walk`; no glass capture until platform layer trace |
+| VOD and video-card player | `lib/pages/video/` and `media_kit_video` locked fork | Confirmed `SimpleVideo` builds Flutter `Texture(textureId: id)` at locked SHA; Android uses `SurfaceTexture`/`VideoOutputManager.CreateSurface` and native platforms use texture IDs. Prism replay has no `TextureLayer` branch; suppress capture pending runtime trace |
 | Live playback | `lib/pages/live_room/` | Same unsafe-video lease; verify independently of VOD |
 | Picture viewer and Live Photo | image/gallery viewer and `live_photo_maker` | Animated/video-backed layer may be visible outside `/video`; register actual surface, not route name |
 | Embedded WebView/captcha/payment | `flutter_inappwebview` and platform-view entry points | PlatformViewLayer not handled by Prism replay; suppress capture during visibility and transitions |
@@ -49,6 +49,6 @@ These are **source-level risks**, not measured TextureLayer/PlatformViewLayer re
 ## Evidence pending
 
 - P0-02/P0-03/P0-04/P0-06: isolated Actions SDK/patch/analyze/test/build logs.
-- P0-05: inspect the locked media renderer at exact SHA, then compare with runtime layer traces.
+- P0-05: source review completed at locked SHA; runtime layer traces and additional media entry audits still pending. See [SimpleVideo](https://github.com/bggRGjQaUbCoE/media-kit/blob/85f0a69ea66b100882b27a3375c72e5155375343/media_kit_video/lib/src/video/simple_video_texture.dart), [Android controller](https://github.com/bggRGjQaUbCoE/media-kit/blob/85f0a69ea66b100882b27a3375c72e5155375343/media_kit_video/lib/src/video_controller/android_video_controller/real.dart), [native controller](https://github.com/bggRGjQaUbCoE/media-kit/blob/85f0a69ea66b100882b27a3375c72e5155375343/media_kit_video/lib/src/video_controller/native_video_controller/real.dart).
 - P0-11–P0-14: actual screenshots, gestures and Android profile baseline; no device evidence yet.
 - G0: **not passed** until the original application builds reproducibly and the surface inventory is complete.
