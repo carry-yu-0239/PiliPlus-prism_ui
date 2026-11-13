@@ -35,12 +35,12 @@
 
 | 交接维度 | 当前事实 |
 |---|---|
-| 开发分支及 PR | `feat/prism-p0-foundation`，[PR #2](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/2) 为 Draft；基于文档分支 `docs/prism-ui-spec-20261111`，文档 [PR #1](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/1) 尚未合入 `main` |
-| 最新代码提交 | [`6d08421a13b55abab142d158fdd94adbb578c7da`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/6d08421a13b55abab142d158fdd94adbb578c7da)：为独立账户删除测试夹具显式提供 `buvid`；未修改产品逻辑、断言或测试门槛 |
+| P0 历史分支及 PR | `feat/prism-p0-foundation`，[PR #2](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/2) 为 Draft；基于文档分支 `docs/prism-ui-spec-20261111`，文档 [PR #1](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/1) 尚未合入 `main` |
+| P0 最近代码提交 | [`6d08421a13b55abab142d158fdd94adbb578c7da`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/6d08421a13b55abab142d158fdd94adbb578c7da)：为独立账户删除测试夹具显式提供 `buvid`；未修改产品逻辑、断言或测试门槛 |
 | 最近两次正式验证 | [Run #10（push）](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43380337911)、[Run #11（pull_request）](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43380343098)，均 **success**；两者均对应同一代码提交 |
 | 测试与构建结论 | Flutter 3.47.9 / Dart 3.13.7 / engine `9e025265bef30b838c0c1b68cad19decf97048f2`；原 Android 补丁链、lockfile 检查、`flutter analyze --no-fatal-infos`、`flutter test`（41/41）及 Android dev APK 构建、产物上传通过 |
 | 构建证据 | [Run #10 的 APK artifact](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43380337911/artifacts/14017520193)：ARMv7、ARM64、x86_64 三种 APK；开发构建使用仓库已有的开发签名回退，不涉及生产签名或发布 |
-| Gate G0 | **未通过**：全仓入口台账 P0-09/10 尚未完成；P0-01/04 和实机 P0-11—14 仍待完成或取证。P1 不得据此提前开工 |
+| Gate G0 | **未通过**：全仓入口台账 P0-09/10 尚未完成；P0-01/04 和实机 P0-11—14 仍待完成或取证。P1 已由用户单独批准提前实施，验收 Gate 仍未通过 |
 | 最近一次文档一致性检查 | 本轮编辑前，开发分支 `spec.md` 的 Git blob `f8de30659ad249714674800c539a6b2b97e5fe41` 与 Library 原文件版本 `1` 的原始字节 SHA 完全一致；本轮双端更新结果按回读实况另行报告。 `main` 等待 PR #1 合并 |
 
 ### 本轮故障、修复与验证
@@ -62,6 +62,21 @@
 - **关联需求/验证**：R01/R02、P1-01～17 与 G1；后续 P2/G2 的 Shader 与设备验证继续按 T 编号及 §15 适用矩阵执行。P0 原始验收门槛和 P2—P10 性能边界原封不动。
 - **下一工作入口**：依据真实 CI 日志解决 P1 新依赖的 `pubspec.lock` 与 Dart API 编译问题；继续 VP-01/04/05/07，完成包测试、混合 App tests 与实际 Android APK，随后处理独立 P2/P3 适配。
 - **文档位置**：本次修改首先提交 P1 分支 GitHub 原 `spec.md`，随后以 Library 稳定原文件 ID `libfile_5fddde3697608191a9fd61f84b677435` 的当前版本原位覆盖并回读；`main` 仍待文档 PR #1及后续开发 PR 合并。若双端某一步失败，则本条不得代表同步成功。
+
+
+
+### 2026-11-13 P1/P2/P3/P4 实际代码实施交接（最新）
+
+- **分支/PR**：`feat/prism-p1-integration`，Draft [PR #3](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/3) → `feat/prism-p0-foundation`；`main` 仍待 PR #1 与 #2/3 按依赖合并。最新 P1 代码提交 [`a7f5845c`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/a7f5845c5d72df108b630942dd2c884fb6cbbdbd)。
+- **P1 已写入源码（待全部验证）**：`packages/prism_ui` 固定上游194文件；`pubspec.yaml`、`pubspec.lock` path 依赖；`lib/main.dart` + `lib/prism/bridge.dart` 的 Material/Prism 颜色主题映射、真实 IconTheme、20 字段 UiLocalizations、Measure/View/Motion Scope、唯一根 Host；VP-01 Dock 重新激活与单层徽标/触觉，VP-02 reduced/Haptics 部分接入，VP-03 Measure 文本缩放与方向，VP-04 Shader ensureLoaded 状态（profile计数尚缺），VP-05 字重覆盖（显式覆盖点待审计），VP-07 未实现。补丁源文件/尚待测试记录见 `packages/prism_ui/PATCHES.md`。
+- **P2 已写入源码（待验收）**：`lib/prism/preferences.dart`、`glass_policy.dart`、原 `storage_pref.dart` / `storage_key.dart` 和 `style_settings.dart`：实验 UI 总开关、Off/Standard/Ultra、动效与页面过渡持久化、安全默认值、确定性的有效玻璃准入（渲染器/Shader/媒体/过渡/高对比度/前后台），增加 `test/prism/preferences_test.dart`、`glass_policy_test.dart`。主业务树有播放器/PlatformView 风险，当前标记 `unsafeSurface=true`，所以**仅独立预览的无媒体场景可启用原生 Shader**，不把预览当作生产整页折射验收。新增 `lib/prism/preview_page.dart` 设置页入口，直接采用原生 LiquidGlass 与 NavigationDock，可交互预览。
+- **P3 已写入源码（待验证）**：`lib/prism/navigation_adapter.dart` 提供三个原生 Glyph 与实际配置序列，真实 `main/view.dart` 底栏在实验开关开启后改用原生 NavigationDock，保留旧 floating/Material 模式；dynamic badge 对 dot/number/hidden 做显式准入和语义去重，原 `MainController.setIndex` 的业务选择、重选回顶与节流不重写。触觉由新 Dock feedback hook 与业务 `haptic:false` 分工，拖动回当前项不误重选。P3 SafeArea/真实手势/性能矩阵未验证，G3 不通过。
+- **P4 已写入源码（待验证）**：`lib/prism/root_tab_host.dart` 在 Prism 实验模式选择稳定身份、惰性创建并保留已访问页面，支持 inherit/none/fade/slide（220/300ms）、系统 reduced 和新目标中断；使用原生 `LiquidGlassFade`，没有截图中间页或复制播放器纹理。`MainController` 的传统 Page/Tab controller 保留在旧界面分支，Prism 分支不创建旧 controller。新增 `test/prism/root_tab_host_test.dart`；尚未通过 CI/G4，不能宣称保活和快速中断完整验证。
+- **提交证据**：[`bc2cad15`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/bc2cad153a3c70a845202390ec69f244cd1c6e40) 初次锁文件；[`0538fcc0`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/0538fcc052d1ab2bf8d1fd825dafb950bb806051) P2 配置；[`930e7067`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/930e7067f9c4f31f8df313ecda5540faa8b3adaa) 修复真实 pub lock 排序；[`3b42a440`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/3b42a4407b20e5283d4851656e990bdd997edec3) 原生导航/无媒体预览/Shader 状态与场景策略；[`a7f5845c`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/a7f5845c5d72df108b630942dd2c884fb6cbbdbd) P4 root host、字重补丁与测试。
+- **Actions 实况**：[Run #43390836533](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43390836533) 曾因 `freezed_annotation` 字母排序漂移失败，现已按 CI diff 修复；[Run #43391165642](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43391165642) 通过原补丁、lockfile、analyze 和 test，但被后续 push 取消 APK；[Run #43392174612](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43392174612) 通过 analyze/test，APK 构建启动但结果待追踪；[Run #43393322012](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43393322012) 为最新 `a7f5845c` 触发、在此记录时无最终结论。**不得把取消运行的 APK 和未结束运行当成成功。**
+- **TODO/Gate**：P1-01～13、P2 设置/策略、P3-01～10、P4-01～07 均为已实现部分或主要代码、待证据；**仍全部保持 `[ ]`**。P0 未完成清单与 G0 保留，G1～G4 均尚未通过；真机 Shader/PlatformView/120Hz/GPU 和手势录屏尚未验证。
+- **下一轮精确入口**：首先读取最新 PR #3 Actions 的 analyzer/test/build 完整结果；按日志修复 `a7f5845c` 的 API 或生命周期问题并重跑。之后补 VP-01 触摸/键盘/语义包级测试、VP-02 完整 reduced ticker、VP-04 profile 计数、VP-07 route 主题捕获及 P3 SafeArea；在获得 G2/G3 证据前保持生产混合 Host 禁止捕获。
+- **双端文档同步**：必须将本记录作为原 `spec.md` 内容同步到 P1 开发分支和原 Library 文件 `libfile_5fddde3697608191a9fd61f84b677435`，两端完整字节 SHA 相等后才可报告成功；main 等待合并。
 
 
 ## 1. 规范用法与完成定义
