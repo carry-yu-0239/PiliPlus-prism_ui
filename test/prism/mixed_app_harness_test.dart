@@ -5,7 +5,7 @@ import 'package:PiliPlus/prism/localizations.dart';
 import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:get/get.dart' as get;
+import 'package:get/get.dart' as gx;
 import 'package:hive_ce/hive.dart';
 import 'package:material_ui/material_ui.dart' as m;
 import 'package:prism_ui/prism_ui.dart' as prism;
@@ -31,7 +31,7 @@ void main() {
     }
   });
 
-  Widget mixedApp(Widget body) => get.GetMaterialApp(
+  Widget mixedApp(Widget body) => gx.GetMaterialApp(
     theme: m.ThemeData.light(),
     locale: const Locale('zh', 'CN'),
     localizationsDelegates: [
@@ -109,7 +109,7 @@ void main() {
     await tester.pumpAndSettle();
     expect(find.text('Popup content'), findsOneWidget);
     expect(observedBrightness, Brightness.dark);
-    get.Get.back();
+    gx.Get.back();
     await tester.pumpAndSettle();
     expect(find.text('Popup content'), findsNothing);
     expect(tester.takeException(), isNull);
