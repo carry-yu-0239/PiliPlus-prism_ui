@@ -314,10 +314,12 @@ class ModalSideSheetRoute<T> extends PopupRoute<T>
     this.barrierOnTapHint,
     this.backgroundColor,
     this.modalBarrierColor,
+    this.capturedThemes,
   });
 
   final WidgetBuilder builder;
 
+  final CapturedThemes? capturedThemes;
   final Color? backgroundColor;
 
   final Color? modalBarrierColor;
@@ -380,7 +382,8 @@ class ModalSideSheetRoute<T> extends PopupRoute<T>
       ),
     );
 
-    return ElevatedSurfaceTheme(child: content);
+    final page = ElevatedSurfaceTheme(child: content);
+    return capturedThemes?.wrap(page) ?? page;
   }
 
   @override
@@ -425,6 +428,7 @@ Future<T?> showModalSideSheet<T>({
   final localizations = UiLocalizations.of(context);
   return navigator.push(
     ModalSideSheetRoute<T>(
+      capturedThemes: InheritedTheme.capture(from: context, to: navigator.context),
       builder: builder,
       barrierLabel: localizations.close,
       barrierOnTapHint: localizations.close,
