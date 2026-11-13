@@ -2,7 +2,7 @@
 
 > **规范版本：1.0 · 2026-11-11**  
 > **目标仓库：carry-yu-0239/PiliPlus-prism_ui**  
-> **状态：P0 基线工程验证已启动；Prism UI 组件集成与实机验收尚未开始。**  
+> **状态：P1 基础集成开发中；P0 未完成的证据任务保留，G0/G1 尚未通过。**  
 > 本文定义开发范围、架构、行为、参数、阶段任务和验收证据。后续开发必须按本文的需求编号与 TODO 推进；发现源码或实验结果与本文冲突时，先修正规范中的相应决定并记录原因，再改实现。
 
 ## 目录
@@ -31,7 +31,7 @@
 
 ## 0. 当前开发进度与会话交接
 
-> **更新日期：2026-11-13。当前阶段 P0；Gate G0 为阻塞状态。** 本章仅记录已提交代码、GitHub Actions 和实测证据；未满足原定义的 TODO 保持 `[ ]`。
+> **更新日期：2026-11-13。当前实际开发阶段 P1；Gate G0 仍有未核验条目，G1 未验证。** 本章仅记录已提交代码、GitHub Actions 和实测证据；未满足原定义的 TODO 保持 `[ ]`。
 
 | 交接维度 | 当前事实 |
 |---|---|
@@ -50,6 +50,19 @@
 - **已完成并有证据的 P0 TODO：** P0-02、P0-03、P0-05、P0-06、P0-07、P0-08。证据分别见 [冻结基线](docs/prism/baseline.md)、[场景台账](docs/prism/surface_inventory.md)、上述 Actions 日志与产物。本轮关联 R01/R02、T01；没有 Prism 功能集成或真机 Shader 成绩。
 - **正在执行/阻塞：** P0-01 需完成原始状态确认；P0-04 需建立/核实防止补丁重复执行的环境标记；P0-09/10 需按 `rg` 全面扩充稳定入口 ID、Navigator/返回值/滚动所有者；P0-11—14 缺少实际设备录像、截图与性能基线。所有这些 TODO 仍未勾选。
 - **下一轮准确入口：** 先完成 P0-09 / P0-10 的逐调用点清单并审查 P0-04 标记机制，然后取得 P0-11—14 的设备证据；仅在 G0 所有条件可核对后进入 P1。
+
+
+### 2026-11-13 用户批准的任务顺序变更：优先实施 P1
+
+- **原条款**：§13.2、P1 前置 G0；必须先完成 P0 的入口全量审计和实体设备资料。**本轮新决定**：因 P0 Flutter 3.47.9/原补丁链/41项测试/Android APK 已有成功 Actions 证据，用户明确要求先投入可独立实施的 P1 工程工作。P0-01/04/09/10/11/12/13/14 继续保留未完成、G0 不宣告通过，G1/G2 等各自测试条件不降低；开发重排不是验收豁免。
+- **原因和可回退性**：阻塞于设备、全面台账的项目不再阻止低风险引入 Prism 固定依赖及混合根桥接；默认关闭 Prism/Glass，随时可回退现有界面。不得提前激活媒体捕获或将试编译等同实机验证。
+- **分支与可核实代码**：`feat/prism-p1-integration`，Draft [PR #3](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/3)，基于 `feat/prism-p0-foundation`。[`2813e144`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/2813e144fec869c58d03df5281bd85c1f837a4ce) 引入固定 `5d8ed7ab…` 上游完整 194 文件（含两份 Shader、测试、LICENSE、NOTICE）；[`e6278e7`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/e6278e774bb2d15dedb83e0863ce61ff7a57cc96) 增加 path dependency、根桥接、20项本地化与受控 Motion/Measure 补丁；[`ce419c4`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/ce419c47392a5bef6364d85493de1457cc3ae57c) 修复 builder 闭包自引用，并将 Measure 置于 Prism 主题之下。
+- **正在实施、不得勾选**：P1-01/02/03/05/07/10/11/12/13 有部分或主要代码，均待锁文件、包/应用测试、CI 校验；P1-04/06/08/09/14/15/16/17 尚未完成。**任何 P1 TODO 尚未取得全部完成证据。**
+- **测试状态**：最后一次已确认成功的完整原版运行是 P0 [Run #10](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43380337911) / [Run #11](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43380343098)。P1 新提交触发的 [Run #17](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43389900615) 在此记录写入时尚未取得最终结论；不能视作成功。新依赖的 `pubspec.lock` 及完整补丁验证仍需核对。
+- **关联需求/验证**：R01/R02、P1-01～17 与 G1；后续 P2/G2 的 Shader 与设备验证继续按 T 编号及 §15 适用矩阵执行。P0 原始验收门槛和 P2—P10 性能边界原封不动。
+- **下一工作入口**：依据真实 CI 日志解决 P1 新依赖的 `pubspec.lock` 与 Dart API 编译问题；继续 VP-01/04/05/07，完成包测试、混合 App tests 与实际 Android APK，随后处理独立 P2/P3 适配。
+- **文档位置**：本次修改首先提交 P1 分支 GitHub 原 `spec.md`，随后以 Library 稳定原文件 ID `libfile_5fddde3697608191a9fd61f84b677435` 的当前版本原位覆盖并回读；`main` 仍待文档 PR #1及后续开发 PR 合并。若双端某一步失败，则本条不得代表同步成功。
+
 
 ## 1. 规范用法与完成定义
 
@@ -879,10 +892,11 @@ P0 → P1 → P2 → P3 → P4 构成首个可运行导航里程碑。P5、P6、
 
 每个阶段有单独 gate。未过 gate 可以继续做不依赖它的研究/测试准备，不能把依赖该能力的功能标成完成或扩大默认启用范围。
 
+**2026-11-13 实施顺序例外（用户明确批准）**：允许先在独立开发分支实施 P1 与不依赖未完成设备台账的代码，但保持 G0 标记未通过，P1 功能不可默认启用未验证玻璃；所有 P1/P2/P3 的验收 Gate、业务合同、设备性能门槛与回退要求保持不变。详见 §0 变更记录。
+
 ## 14. P0—P10 详细开发 TODO
 
 ### P0 — 冻结基线、重现工具链和建立行为台账
-
 **目标**：先证明原应用可构建，并记录需要保留的行为；避免把原问题、环境问题、迁移回归混在一起。
 
 **输入**：本文固定提交、现有构建脚本和 lockfile。  
@@ -1586,7 +1600,6 @@ vendored包根目录另运行其pub get/analyze以及与VP补丁直接相关的�
 [F-TEST-DOCK]: https://github.com/chen08209/FlClash/blob/be84736605527034689c95bf27828ff27d912c5e/test/widgets/navigation_dock_test.dart
 [F-TEST-SHEET]: https://github.com/chen08209/FlClash/blob/be84736605527034689c95bf27828ff27d912c5e/test/widgets/snap_sheet_test.dart
 [D-SMART]: https://github.com/bggRGjQaUbCoE/flutter_smart_dialog/blob/5a1be84314e8c53efa3b7324cd8dc535fefe931a/lib/src/init_dialog.dart
-
 
 
 
