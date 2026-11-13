@@ -118,6 +118,7 @@ Future<T?> showFormSheet<T>({
   final navigator = sheetNavigatorOf(context);
   return navigator.push(
     FormSheetRoute<T>(
+      capturedThemes: InheritedTheme.capture(from: context, to: navigator.context),
       builder: builder,
       backgroundColor: props.backgroundColor,
       barrierColor: context.colorScheme.modalScrim,
