@@ -165,9 +165,13 @@ class _PrismRootTabHostState extends State<PrismRootTabHost>
           ? 0
           : (_orderOf(identity) < _orderOf(next) ? -1 : 1);
     }
-    _controller
-      ..duration = _duration
-      ..forward(from: 0);
+    final generation = _generation;
+    _controller.duration = _duration;
+    _controller.forward(from: 0).then((_) {
+      // Completion of a superseded transition must not rewrite a newer target.
+      if (!mounted || generation != _generation) return;
+      _settleImmediately();
+    });
   }
 
   @override
