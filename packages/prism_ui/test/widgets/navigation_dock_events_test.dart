@@ -87,6 +87,42 @@ void main() {
     expect(tester.takeException(), isNull);
   });
 
+  testWidgets('Reduced motion switch settles active native Dock tickers and disposes cleanly',
+      (tester) async {
+    final reduced = ValueNotifier(false);
+    addTearDown(reduced.dispose);
+    var current = 0;
+    await tester.pumpWidget(HostApp(
+      home: Center(
+        child: ValueListenableBuilder<bool>(
+          valueListenable: reduced,
+          builder: (context, isReduced, _) => PrismMotionScope(
+            reduceMotion: isReduced,
+            hapticsEnabled: false,
+            child: StatefulBuilder(builder: (context, setState) {
+              return NavigationDock(
+                destinations: _items,
+                selectedIndex: current,
+                onSelected: (index) => setState(() => current = index),
+              );
+            }),
+          ),
+        ),
+      ),
+    ));
+
+    await tester.tap(find.text('Second'));
+    await tester.pump(const Duration(milliseconds: 16));
+    expect(current, 1);
+    reduced.value = true;
+    await tester.pump();
+    await tester.pumpAndSettle();
+    expect(tester.takeException(), isNull);
+    await tester.pumpWidget(const SizedBox.shrink());
+    await tester.pump();
+    expect(tester.takeException(), isNull);
+  });
+
   testWidgets('Semantics activation uses one callback and respects haptics scope',
       (tester) async {
     final semantics = tester.ensureSemantics();
