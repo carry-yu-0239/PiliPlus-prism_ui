@@ -75,6 +75,12 @@ jobs:
       - name: Run existing tests
         shell: bash
         run: flutter test
+      - name: Run vendored Prism package tests
+        shell: bash
+        working-directory: packages/prism_ui
+        run: |
+          flutter pub get
+          flutter test --no-pub
       - name: Build unsigned Android development APK
         shell: bash
         run: flutter build apk --release --split-per-abi --android-project-arg dev=1 --no-pub

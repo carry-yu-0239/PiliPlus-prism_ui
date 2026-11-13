@@ -1298,6 +1298,17 @@ abstract final class LiquidGlassShaders {
 
   static bool get rendererSupported => ui.ImageFilter.isShaderFilterSupported;
 
+  /// Opt-in numeric diagnostics. Never retains a shader, image or snapshot.
+  static const bool profilingEnabled = bool.fromEnvironment(
+    'PRISM_PROFILE_METRICS',
+    defaultValue: false,
+  );
+
+  static int get captureCount =>
+      profilingEnabled ? LiquidGlassHost.debugCaptures : 0;
+  static int get heldCaptureCount =>
+      profilingEnabled ? LiquidGlassHost.debugHeldCaptures : 0;
+
   /// A pane and the root policy join the same in-flight load.
   static Future<bool> ensureLoaded() => _GlassProgram.ensureLoaded();
 }

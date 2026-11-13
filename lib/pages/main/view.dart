@@ -10,6 +10,7 @@ import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/prism/navigation_adapter.dart';
+import 'package:PiliPlus/prism/glass_policy.dart';
 import 'package:PiliPlus/prism/root_tab_host.dart';
 import 'package:PiliPlus/prism/preferences.dart';
 import 'package:prism_ui/prism_ui.dart' as prism;
@@ -42,6 +43,21 @@ class _MainAppState extends PopScopeState<MainApp>
   late EdgeInsets _padding;
   late ColorScheme _colorScheme;
   Brightness? _brightness;
+  bool _prismForeground = true;
+  bool _prismAppVisible = true;
+
+  void _onPrismShaderStatus() {
+    if (mounted) setState(() {});
+  }
+
+  void _warmPrismShader() {
+    if (Pref.prismUiEnabled &&
+        Pref.prismGlassMode != PrismGlassMode.off &&
+        prism.LiquidGlassShaders.rendererSupported) {
+      // A shared, non-blocking load; UI keeps its original solid fallback.
+      prism.LiquidGlassShaders.ensureLoaded();
+    }
+  }
 
   @override
   bool get initCanPop => false;
@@ -49,6 +65,10 @@ class _MainAppState extends PopScopeState<MainApp>
   @override
   void initState() {
     super.initState();
+    prism.LiquidGlassShaders.state.addListener(_onPrismShaderStatus);
+    WidgetsBinding.instance.addPostFrameCallback((_) {
+      if (mounted) _warmPrismShader();
+    });
     addObserverMobile(this);
     if (Platform.isMacOS) {
       HardwareKeyboard.instance.addHandler(_handleKeyEvent);
@@ -85,6 +105,9 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   void didPopNext() {
+    _prismForeground = true;
+    _warmPrismShader();
+    if (mounted) setState(() {});
     addObserverMobile(this);
     _mainController
       ..checkUnreadDynamic()
@@ -95,13 +118,18 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   void didPushNext() {
+    _prismForeground = false;
+    if (mounted) setState(() {});
     removeObserverMobile(this);
     super.didPushNext();
   }
 
   @override
   void didChangeAppLifecycleState(AppLifecycleState state) {
+    _prismAppVisible = state == AppLifecycleState.resumed;
+    if (mounted) setState(() {});
     if (state == AppLifecycleState.resumed) {
+      _warmPrismShader();
       _mainController
         ..checkUnreadDynamic()
         ..checkDefaultSearch(true)
@@ -111,6 +139,7 @@ class _MainAppState extends PopScopeState<MainApp>
 
   @override
   void dispose() {
+    prism.LiquidGlassShaders.state.removeListener(_onPrismShaderStatus);
     if (Platform.isMacOS) {
       HardwareKeyboard.instance.removeHandler(_handleKeyEvent);
     }
@@ -231,7 +260,9 @@ class _MainAppState extends PopScopeState<MainApp>
           return Obx(
             () => AnimatedSlide(
               curve: Curves.easeInOutCubicEmphasized,
-              duration: const Duration(milliseconds: 500),
+              duration: prism.PrismMotionScope.reduceMotionOf(context)
+                  ? Duration.zero
+                  : const Duration(milliseconds: 500),
               offset: Offset(0, showBottomBar.value ? 0 : 1),
               child: bottomNav,
             ),
@@ -382,11 +413,31 @@ class _MainAppState extends PopScopeState<MainApp>
       padding = .only(top: _padding.top, right: _padding.right);
     }
 
+    // A dedicated Host covers only the main tabs' painted area.
+    // Pushed routes (video/live/gallery/PlatformView) lie outside this Host;
+    // RouteAware also disables it as soon as a secondary route is shown.
+    final glass = PrismGlassPolicy.resolve(
+      uiEnabled: Pref.prismUiEnabled,
+      requested: Pref.prismGlassMode,
+      rendererSupported: prism.LiquidGlassShaders.rendererSupported,
+      shaderState: prism.LiquidGlassShaders.state.value,
+      unsafeSurface: !_prismForeground,
+      unsafeTransition: false,
+      appVisible: _prismAppVisible,
+      highContrast: MediaQuery.highContrastOf(context),
+    );
     child = Material(
-      child: MainLayout(
-        sideBar: sideBar,
-        bottomNav: bottomNav,
-        body: Padding(padding: padding, child: child),
+      child: prism.LiquidGlassScope(
+        enabled: glass.enabled,
+        quality: glass.quality,
+        child: prism.LiquidGlassHost(
+          enabled: glass.enabled,
+          child: MainLayout(
+            sideBar: sideBar,
+            bottomNav: bottomNav,
+            body: Padding(padding: padding, child: child),
+          ),
+        ),
       ),
     );
 
