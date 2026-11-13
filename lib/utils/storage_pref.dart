@@ -47,9 +47,16 @@ import 'package:flutter/foundation.dart';
 import 'package:get/get.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:material_ui/material_ui.dart';
+import 'package:PiliPlus/prism/preferences.dart';
 
 abstract final class Pref {
   static final Box _setting = GStorage.setting;
+
+  /// Only UI and root transition choices are frozen at startup.
+  static bool get prismUiEnabled => PrismPreferences.isEnabled;
+  static PrismGlassMode get prismGlassMode => PrismPreferences.glassMode;
+  static PrismMotionMode get prismMotionMode => PrismPreferences.motionMode;
+  static PrismRootTransition get prismRootTransition => PrismPreferences.rootTransition;
   static final Box _video = GStorage.video;
   static final Box _localCache = GStorage.localCache;
 

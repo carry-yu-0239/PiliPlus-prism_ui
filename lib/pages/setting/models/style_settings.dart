@@ -23,6 +23,8 @@ import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
+import 'package:PiliPlus/prism/preferences.dart';
+import 'package:PiliPlus/prism/preview_page.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
@@ -103,6 +105,60 @@ List<SettingsModel> get styleSettings => [
     getSubtitle: () => '当前缩放比例：${Pref.uiScale.toStringAsFixed(2)}',
     leading: const Icon(Icons.zoom_in_outlined),
     onTap: _showUiScaleDialog,
+  ),
+  const SwitchModel(
+    title: 'Prism UI 实验性界面',
+    subtitle: '默认关闭；开启后重启生效，仍保留原导航和播放器逻辑',
+    leading: Icon(Icons.blur_on_outlined),
+    setKey: SettingBoxKey.prismUiEnabled,
+    defaultVal: false,
+    needReboot: true,
+  ),
+  PopupModel(
+    title: 'Prism 原生玻璃质量',
+    leading: const Icon(Icons.blur_circular_outlined),
+    value: () => Pref.prismGlassMode,
+    items: PrismGlassMode.values,
+    onSelected: (value, setState) {
+      GStorage.setting
+          .put(SettingBoxKey.prismGlassMode, value.name)
+          .whenComplete(() {
+            setState();
+            Get.appUpdate();
+          });
+    },
+  ),
+  PopupModel(
+    title: 'Prism 动效模式',
+    leading: const Icon(Icons.motion_photos_on_outlined),
+    value: () => Pref.prismMotionMode,
+    items: PrismMotionMode.values,
+    onSelected: (value, setState) {
+      GStorage.setting
+          .put(SettingBoxKey.prismMotionMode, value.name)
+          .whenComplete(() {
+            setState();
+            Get.appUpdate();
+          });
+    },
+  ),
+  PopupModel(
+    title: 'Prism 主导航页面过渡',
+    leading: const Icon(Icons.swap_horiz_outlined),
+    value: () => Pref.prismRootTransition,
+    items: PrismRootTransition.values,
+    onSelected: (value, setState) {
+      GStorage.setting
+          .put(SettingBoxKey.prismRootTransition, value.name)
+          .whenComplete(setState);
+      SmartDialog.showToast('重启生效');
+    },
+  ),
+  NormalModel(
+    title: 'Prism 原生材质与导航预览',
+    subtitle: '独立安全场景，可滚动背景、切换玻璃档位和拖动导航透镜',
+    leading: const Icon(Icons.preview_outlined),
+    onTap: (context, setState) => Get.to(() => const PrismPreviewPage()),
   ),
   const SwitchModel(
     title: '首页切换页面动画',

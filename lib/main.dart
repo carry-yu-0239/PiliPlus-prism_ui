@@ -8,6 +8,9 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/prism/bridge.dart';
+import 'package:PiliPlus/prism/preferences.dart';
+import 'package:PiliPlus/prism/localizations.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/router/app_pages.dart';
@@ -103,6 +106,7 @@ void main() async {
     if (kDebugMode) debugPrint('GStorage init error: $e');
     DeviceUtils.exitApp();
   }
+  PrismPreferences.captureAtStartup();
   ScaledWidgetsFlutterBinding.instance.scaleFactor = Pref.uiScale;
   await Future.wait([
     _initDownPath(),
@@ -301,7 +305,10 @@ class MyApp extends StatelessWidget {
       theme: light,
       darkTheme: dark,
       themeMode: ThemeUtils.themeMode = Pref.themeMode,
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      localizationsDelegates: [
+        ...GlobalMaterialLocalizations.delegates,
+        const PiliPrismLocalizationsDelegate(),
+      ],
       locale: const Locale("zh", "CN"),
       fallbackLocale: const Locale("zh", "CN"),
       supportedLocales: const [Locale("zh", "CN"), Locale("en", "US")],
@@ -330,6 +337,7 @@ class MyApp extends StatelessWidget {
     final uiScale = Pref.uiScale;
     final mediaQuery = MediaQuery.of(context);
     final textScaler = TextScaler.linear(Pref.defaultTextScale);
+    final navigatorSubtree = child!;
     if (uiScale != 1.0) {
       child = MediaQuery(
         data: mediaQuery.copyWith(
@@ -340,7 +348,7 @@ class MyApp extends StatelessWidget {
           viewPadding: tmpPadding ?? mediaQuery.viewPadding / uiScale,
           devicePixelRatio: mediaQuery.devicePixelRatio * uiScale,
         ),
-        child: child!,
+        child: Builder(builder: (context) => PiliPrismBridge(child: navigatorSubtree)),
       );
     } else {
       child = MediaQuery(
@@ -349,7 +357,7 @@ class MyApp extends StatelessWidget {
           padding: tmpPadding,
           viewPadding: tmpPadding,
         ),
-        child: child!,
+        child: Builder(builder: (context) => PiliPrismBridge(child: navigatorSubtree)),
       );
     }
     if (PlatformUtils.isDesktop) {

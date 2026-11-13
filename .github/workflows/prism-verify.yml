@@ -4,7 +4,7 @@ on:
   pull_request:
     branches: [main]
   push:
-    branches: [feat/prism-p0-foundation, "feat/prism-*"]
+    branches: [main, feat/prism-p0-foundation, "feat/prism-*"]
   workflow_dispatch:
 
 permissions:
@@ -15,6 +15,40 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  surface-audit:
+    name: Full repository UI entrypoint inventory evidence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install ripgrep for source audit
+        shell: bash
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends ripgrep
+      - name: Generate full matching callsite inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/prism/verification/ci
+          rg --line-number --column --no-heading \
+            'PopupMenuButton|showMenu[<(]|showDialog[<(]|Get\.dialog|SmartDialog\.show|Switch[<(]|showModalBottomSheet|showBottomSheet|BottomSheet_|showGeneralDialog|showCupertinoDialog|showAdaptiveDialog|Get\.bottomSheet|persistentFooterButtons|OverlayEntry|Navigator\.of|LocalHistoryEntry|InAppWebView|WebViewWidget|PlatformView|AndroidView|UiKitView|Texture[<(]|Video[<(]|show.*Sheet|show.*Popup' \
+            lib --glob '*.dart' \
+            > docs/prism/verification/ci/ui_entrypoints.rg.txt || {
+              echo "::error::Source audit failed or returned no matches"
+              exit 1
+            }
+          wc -l docs/prism/verification/ci/ui_entrypoints.rg.txt
+          cut -d: -f1 docs/prism/verification/ci/ui_entrypoints.rg.txt | sort -u | wc -l
+          sha256sum docs/prism/verification/ci/ui_entrypoints.rg.txt
+          cat docs/prism/verification/ci/ui_entrypoints.rg.txt
+      - name: Upload source audit matches for manual ID mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: prism-ui-entrypoint-raw-${{ github.sha }}
+          path: docs/prism/verification/ci/ui_entrypoints.rg.txt
+          if-no-files-found: error
+          retention-days: 14
+
   android-dev:
     name: Flutter 3.47.9 baseline and Android dev APK
     runs-on: ubuntu-latest
@@ -58,7 +92,25 @@ jobs:
           git status --short
       - name: Apply original Android SDK and package patch chain
         shell: pwsh
-        run: ./lib/scripts/patch.ps1 android
+        run: ./lib/scripts/patch_guard.ps1 -Platform android
+      - name: Verify patch guard repeat and failure diagnostics
+        shell: pwsh
+        run: |
+          ./lib/scripts/patch_guard.ps1 -Platform android
+          ./lib/scripts/patch_guard.ps1 -Platform android -VerifyOnly
+          $state = Join-Path $env:RUNNER_TEMP "prism-android-patch-state.json"
+          $originalMarker = Get-Content $state -Raw
+          $marker = $originalMarker | ConvertFrom-Json
+          $marker.patchInputs = "invalid-patch-fingerprint"
+          $marker | ConvertTo-Json -Depth 4 | Set-Content $state
+          $expectedFailure = $false
+          try { ./lib/scripts/patch_guard.ps1 -Platform android -VerifyOnly } catch {
+            $expectedFailure = $_.Exception.Message -match "Patch state mismatch"
+            Write-Host "Expected stale-marker failure: $_"
+          }
+          if (-not $expectedFailure) { throw "Corrupted patch marker was not rejected" }
+          $originalMarker | Set-Content $state
+          ./lib/scripts/patch_guard.ps1 -Platform android -VerifyOnly
       - name: Check patch and lockfile status
         shell: bash
         run: |
@@ -75,6 +127,18 @@ jobs:
       - name: Run existing tests
         shell: bash
         run: flutter test
+      - name: Analyze vendored Prism package (retain diagnostics)
+        shell: bash
+        working-directory: packages/prism_ui
+        run: |
+          flutter pub get
+          flutter analyze --no-fatal-infos
+      - name: Run vendored Prism package tests
+        shell: bash
+        working-directory: packages/prism_ui
+        run: |
+          flutter pub get
+          flutter test --no-pub
       - name: Build unsigned Android development APK
         shell: bash
         run: flutter build apk --release --split-per-abi --android-project-arg dev=1 --no-pub

@@ -34,6 +34,8 @@ dependencies:
     sdk: flutter
   flutter_localizations:
     sdk: flutter
+  prism_ui:
+    path: packages/prism_ui
 
   app_links: ^7.1.1
   archive: ^4.0.0

@@ -78,7 +78,9 @@ class MainController extends GetxController
 
     setNavBarConfig();
 
-    controller = mainTabBarView
+    controller = Pref.prismUiEnabled
+        ? null
+        : mainTabBarView
         ? TabController(
             vsync: this,
             initialIndex: selectedIndex.value,
@@ -288,16 +290,18 @@ class MainController extends GetxController
     }
   }
 
-  void setIndex(int value) {
-    feedBack();
+  void setIndex(int value, {bool haptic = true}) {
+    if (haptic) feedBack();
 
     final currentNav = navigationBars[value];
     if (value != selectedIndex.value) {
       selectedIndex.value = value;
-      if (mainTabBarView) {
-        controller.animateTo(value);
-      } else {
-        controller.jumpToPage(value);
+      if (!Pref.prismUiEnabled) {
+        if (mainTabBarView) {
+          controller.animateTo(value);
+        } else {
+          controller.jumpToPage(value);
+        }
       }
       if (currentNav == NavigationBarType.home) {
         checkDefaultSearch();
@@ -347,7 +351,7 @@ class MainController extends GetxController
   @override
   void onClose() {
     barOffset?.close();
-    controller.dispose();
+    controller?.dispose();
     super.onClose();
   }
 
