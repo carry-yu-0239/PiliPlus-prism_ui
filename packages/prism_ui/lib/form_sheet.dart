@@ -23,9 +23,12 @@ class FormSheetRoute<T> extends PopupRoute<T>
     required this.barrierColor,
     required this.barrierLabel,
     this.backgroundColor,
+    this.capturedThemes,
   });
 
   final WidgetBuilder builder;
+  @override
+  final CapturedThemes? capturedThemes;
   final Color? backgroundColor;
 
   @override
