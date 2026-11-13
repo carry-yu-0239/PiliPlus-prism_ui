@@ -9,6 +9,8 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
+import 'package:PiliPlus/prism/navigation_adapter.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
 import 'package:PiliPlus/utils/desktop/tray_controller.dart';
@@ -153,7 +155,9 @@ class _MainAppState extends PopScopeState<MainApp>
   Widget? get _bottomNav {
     Widget? bottomNav;
     if (_mainController.navigationBars.length > 1) {
-      if (_mainController.floatingNavBar) {
+      if (Pref.prismUiEnabled) {
+        bottomNav = PiliNavigationDock(controller: _mainController);
+      } else if (_mainController.floatingNavBar) {
         bottomNav = Obx(
           () => FloatingNavigationBar(
             onDestinationSelected: _mainController.setIndex,

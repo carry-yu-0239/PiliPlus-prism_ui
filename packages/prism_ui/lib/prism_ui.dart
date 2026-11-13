@@ -31,6 +31,7 @@ export 'form_sheet.dart';
 export 'goo.dart';
 export 'inherited.dart';
 export 'input.dart';
+export 'icons/icons.dart';
 export 'item_position.dart';
 export 'keep_scope.dart';
 export 'keyboard.dart';

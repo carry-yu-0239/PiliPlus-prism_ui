@@ -24,6 +24,7 @@ import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/models/common/theme/theme_type.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/prism/preferences.dart';
+import 'package:PiliPlus/prism/preview_page.dart';
 import 'package:PiliPlus/pages/mine/controller.dart';
 import 'package:PiliPlus/pages/setting/models/model.dart';
 import 'package:PiliPlus/pages/setting/slide_color_picker.dart';
@@ -152,6 +153,12 @@ List<SettingsModel> get styleSettings => [
           .whenComplete(setState);
       SmartDialog.showToast('重启生效');
     },
+  ),
+  NormalModel(
+    title: 'Prism 原生材质与导航预览',
+    subtitle: '独立安全场景，可滚动背景、切换玻璃档位和拖动导航透镜',
+    leading: const Icon(Icons.preview_outlined),
+    onTap: (context, setState) => Get.to(() => const PrismPreviewPage()),
   ),
   const SwitchModel(
     title: '首页切换页面动画',

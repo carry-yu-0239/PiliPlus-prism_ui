@@ -1,4 +1,7 @@
 import 'package:flutter/widgets.dart';
+import 'package:PiliPlus/prism/preferences.dart';
+import 'package:PiliPlus/utils/storage_pref.dart';
+import 'package:PiliPlus/prism/glass_policy.dart';
 import 'package:material_ui/material_ui.dart' as m;
 import 'package:prism_ui/prism_ui.dart' as p;
 
@@ -18,6 +21,17 @@ class PiliPrismBridge extends StatelessWidget {
       _ => false,
     };
     final prismTheme = _PrismThemeCache.of(materialTheme);
+    // Until media surfaces are classified, the mixed root is never captured.
+    final glass = PrismGlassPolicy.resolve(
+      uiEnabled: Pref.prismUiEnabled,
+      requested: Pref.prismGlassMode,
+      rendererSupported: p.LiquidGlassShaders.rendererSupported,
+      shaderState: p.LiquidGlassShaders.state.value,
+      unsafeSurface: true,
+      unsafeTransition: false,
+      appVisible: true,
+      highContrast: MediaQuery.highContrastOf(context),
+    );
     return p.Theme(
       data: prismTheme,
       child: Builder(builder: (prismContext) => IconTheme(
@@ -31,12 +45,13 @@ class PiliPrismBridge extends StatelessWidget {
               MediaQuery.textScalerOf(prismContext),
             ),
             child: p.PrismMotionScope(
-              reduceMotion: MediaQuery.disableAnimationsOf(context),
-              hapticsEnabled: false,
+              reduceMotion: MediaQuery.disableAnimationsOf(context) ||
+                  Pref.prismMotionMode == PrismMotionMode.reduced,
+              hapticsEnabled: Pref.feedBackEnable,
               child: p.LiquidGlassScope(
-                enabled: false,
-                quality: p.LiquidGlassQuality.standard,
-                child: p.LiquidGlassHost(enabled: false, child: child),
+                enabled: glass.enabled,
+                quality: glass.quality,
+                child: p.LiquidGlassHost(enabled: glass.enabled, child: child),
               ),
             ),
           ),

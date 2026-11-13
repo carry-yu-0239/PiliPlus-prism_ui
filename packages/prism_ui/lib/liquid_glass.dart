@@ -1288,6 +1288,20 @@ class LiquidGlassPane {
   }
 }
 
+/// Shared, idempotent readiness for the *native* bundled glass Shader.
+/// The caller may listen without holding a FragmentProgram or image resource.
+enum LiquidGlassShaderLoadState { notLoaded, loading, ready, failed }
+
+abstract final class LiquidGlassShaders {
+  static final ValueNotifier<LiquidGlassShaderLoadState> state =
+      ValueNotifier(LiquidGlassShaderLoadState.notLoaded);
+
+  static bool get rendererSupported => ui.ImageFilter.isShaderFilterSupported;
+
+  /// A pane and the root policy join the same in-flight load.
+  static Future<bool> ensureLoaded() => _GlassProgram.ensureLoaded();
+}
+
 abstract final class _GlassProgram {
   static ui.FragmentProgram? _program;
   static Future<void>? _loading;
@@ -1297,6 +1311,15 @@ abstract final class _GlassProgram {
   static var _failed = false;
   static final _waiting = <VoidCallback>{};
 
+  static Future<bool> ensureLoaded() async {
+    if (!ui.ImageFilter.isShaderFilterSupported || _failed) return false;
+    if (_program != null) return true;
+    // Reuse the same lazy loader requested by the first glass pane.
+    request(() {});
+    await _loading;
+    return _program != null;
+  }
+
   static ui.FragmentProgram? request(VoidCallback onLoaded) {
     if (_program != null ||
         _failed ||
@@ -1304,9 +1327,11 @@ abstract final class _GlassProgram {
       return _program;
     }
     _waiting.add(onLoaded);
+    LiquidGlassShaders.state.value = LiquidGlassShaderLoadState.loading;
     _loading ??= _load().then(
       (program) {
         _program = program;
+        LiquidGlassShaders.state.value = LiquidGlassShaderLoadState.ready;
         final waiting = _waiting.toList();
         _waiting.clear();
         for (final callback in waiting) {
@@ -1315,6 +1340,7 @@ abstract final class _GlassProgram {
       },
       onError: (Object error, StackTrace stack) {
         _failed = true;
+        LiquidGlassShaders.state.value = LiquidGlassShaderLoadState.failed;
         _waiting.clear();
         FlutterError.reportError(
           FlutterErrorDetails(

@@ -288,8 +288,8 @@ class MainController extends GetxController
     }
   }
 
-  void setIndex(int value) {
-    feedBack();
+  void setIndex(int value, {bool haptic = true}) {
+    if (haptic) feedBack();
 
     final currentNav = navigationBars[value];
     if (value != selectedIndex.value) {

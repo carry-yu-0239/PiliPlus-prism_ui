@@ -11,6 +11,7 @@ import 'package:prism_ui/bar_item_presence.dart';
 import 'package:prism_ui/card_surface.dart';
 import 'package:prism_ui/common_button.dart';
 import 'package:prism_ui/context.dart';
+import 'package:prism_ui/motion_scope.dart';
 import 'package:prism_ui/icons/icons.dart';
 import 'package:prism_ui/shape.dart';
 import 'package:prism_ui/surface.dart';
@@ -302,10 +303,19 @@ class _DockSurface extends StatelessWidget {
 }
 
 class NavigationDockDestination {
-  const NavigationDockDestination({required this.glyph, required this.label});
+  const NavigationDockDestination({
+    required this.glyph,
+    required this.label,
+    this.badge,
+    this.semanticLabel,
+  });
 
   final Glyph glyph;
   final String label;
+  /// Rendered once in an untinted foreground layer outside both lens copies.
+  final Widget? badge;
+  /// Include unread status in the destination's single semantics node.
+  final String? semanticLabel;
 }
 
 class NavigationDock extends StatelessWidget {
@@ -314,11 +324,15 @@ class NavigationDock extends StatelessWidget {
     required this.destinations,
     required this.selectedIndex,
     required this.onSelected,
+    this.onReselected,
+    this.onActivationFeedback,
   });
 
   final List<NavigationDockDestination> destinations;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
+  final ValueChanged<int>? onReselected;
+  final VoidCallback? onActivationFeedback;
 
   static double heightOf(BuildContext context) {
     return _barHeight +
@@ -363,6 +377,8 @@ class NavigationDock extends StatelessWidget {
                       destinations: destinations,
                       selectedIndex: selectedIndex,
                       onSelected: onSelected,
+                      onReselected: onReselected,
+                      onActivationFeedback: onActivationFeedback,
                     ),
                   ),
                 ),
@@ -877,11 +893,15 @@ class FloatingNavigationBar extends StatefulWidget {
     required this.destinations,
     required this.selectedIndex,
     required this.onSelected,
+    this.onReselected,
+    this.onActivationFeedback,
   });
 
   final List<NavigationDockDestination> destinations;
   final int selectedIndex;
   final ValueChanged<int> onSelected;
+  final ValueChanged<int>? onReselected;
+  final VoidCallback? onActivationFeedback;
 
   @override
   State<FloatingNavigationBar> createState() => _FloatingNavigationBarState();
@@ -911,6 +931,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
   int? _pressedIndex;
   double _pressX = 0;
   bool _dragging = false;
+  bool _dragHapticSent = false;
   bool _dropping = false;
   VelocityTracker? _tracker;
   Offset? _cursor;
@@ -1174,6 +1195,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
     _pressedIndex = index;
     _pressX = localPosition.dx;
     _dragging = false;
+    _dragHapticSent = false;
     _dropping = false;
     _lift.springTo(1, _liftSpring);
     _lens.springTo(index.toDouble(), _travelSpring);
@@ -1200,7 +1222,10 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
     _lens.springTo(position, _followSpring);
     final index = _indexAt(position);
     if (index != _pressedIndex) {
-      HapticFeedback.selectionClick();
+      if (PrismMotionScope.hapticsEnabledOf(context)) {
+        HapticFeedback.selectionClick();
+        _dragHapticSent = true;
+      }
       _pressedIndex = index;
     }
   }
@@ -1225,7 +1250,10 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
         .clamp(pressed - 1, pressed + 1)
         .clamp(0, _lastIndex);
     if (index != pressed) {
-      HapticFeedback.selectionClick();
+      if (PrismMotionScope.hapticsEnabledOf(context)) {
+        HapticFeedback.selectionClick();
+        _dragHapticSent = true;
+      }
       _pressedIndex = index;
     }
   }
@@ -1240,7 +1268,18 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
     _dropping = true;
     _lens.springTo((commit ? index : _selectedIndex).toDouble(), _travelSpring);
     _dropLift();
-    if (commit && index != widget.selectedIndex) {
+    if (commit) {
+      _activate(index, feedback: !_dragHapticSent);
+    }
+  }
+
+  void _activate(int index, {bool feedback = true}) {
+    if (feedback && PrismMotionScope.hapticsEnabledOf(context)) {
+      widget.onActivationFeedback?.call();
+    }
+    if (index == widget.selectedIndex) {
+      widget.onReselected?.call(index);
+    } else {
       widget.onSelected(index);
     }
   }
@@ -1335,7 +1374,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
                                 labelHeight: lineHeight,
                                 labelOverflows:
                                     labels[index].width * labelScale > room,
-                                onActivate: () => widget.onSelected(index),
+                                onActivate: () => _activate(index),
                               ),
                             ),
                         ],
@@ -1385,6 +1424,31 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
                             ),
                             child: items(_LensPart.inside),
                           ),
+                        // Badge foreground is never sampled or color-filtered by
+                        // the inside/outside lens content copies.
+                        Positioned.fill(
+                          child: IgnorePointer(
+                            child: ExcludeSemantics(
+                              child: Padding(
+                                padding: EdgeInsets.symmetric(
+                                  horizontal: layout.inset,
+                                ),
+                                child: Row(
+                                  children: [
+                                    for (final destination in widget.destinations)
+                                      Expanded(
+                                        child: Align(
+                                          alignment: Alignment.topRight,
+                                          child: destination.badge ??
+                                              const SizedBox.shrink(),
+                                        ),
+                                      ),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ),
+                        ),
                       ],
                     );
                   },
@@ -1726,7 +1790,7 @@ class _FloatingBarItemState extends State<_FloatingBarItem> {
         container: true,
         button: true,
         selected: widget.selected,
-        label: widget.destination.label,
+        label: widget.destination.semanticLabel ?? widget.destination.label,
         excludeSemantics: true,
         onTap: widget.onActivate,
         child: DecoratedBox(
