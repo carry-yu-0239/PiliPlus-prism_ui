@@ -68,9 +68,12 @@ class SnapSheetRoute<T> extends PopupRoute<T>
     this.detents = snapSheetDetents,
     this.fitsContent = false,
     this.initialScrollOffset = 0,
+    this.capturedThemes,
   });
 
   final SnapSheetBuilder builder;
+  /// Captured from the originating context before entering the target Navigator.
+  final CapturedThemes? capturedThemes;
   final Color sheetBarrierColor;
   final List<double> detents;
 
@@ -199,7 +202,8 @@ class SnapSheetRoute<T> extends PopupRoute<T>
     Animation<double> animation,
     Animation<double> secondaryAnimation,
   ) {
-    return ElevatedSurfaceTheme(child: _SnapSheet(route: this));
+    final content = ElevatedSurfaceTheme(child: _SnapSheet(route: this));
+    return capturedThemes?.wrap(content) ?? content;
   }
 }
 
