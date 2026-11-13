@@ -2,11 +2,12 @@
 
 > **规范版本：1.0 · 2026-11-11**  
 > **目标仓库：carry-yu-0239/PiliPlus-prism_ui**  
-> **状态：基于固定源码的实施规范；实现、构建与实机验收尚未开始。**  
+> **状态：P0 基线工程验证已启动；Prism UI 组件集成与实机验收尚未开始。**  
 > 本文定义开发范围、架构、行为、参数、阶段任务和验收证据。后续开发必须按本文的需求编号与 TODO 推进；发现源码或实验结果与本文冲突时，先修正规范中的相应决定并记录原因，再改实现。
 
 ## 目录
 
+0. 当前开发进度与会话交接
 1. 规范用法与完成定义
 2. 固定基线与审查结论
 3. 产品范围、保留行为与不可漂移约束
@@ -27,6 +28,28 @@
 18. 固定源码索引
 
 ---
+
+## 0. 当前开发进度与会话交接
+
+> **更新日期：2026-11-13。当前阶段 P0；Gate G0 为阻塞状态。** 本章仅记录已提交代码、GitHub Actions 和实测证据；未满足原定义的 TODO 保持 `[ ]`。
+
+| 交接维度 | 当前事实 |
+|---|---|
+| 开发分支及 PR | `feat/prism-p0-foundation`，[PR #2](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/2) 为 Draft；基于文档分支 `docs/prism-ui-spec-20261111`，文档 [PR #1](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/1) 尚未合入 `main` |
+| 最新代码提交 | [`6d08421a13b55abab142d158fdd94adbb578c7da`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/6d08421a13b55abab142d158fdd94adbb578c7da)：为独立账户删除测试夹具显式提供 `buvid`；未修改产品逻辑、断言或测试门槛 |
+| 最近两次正式验证 | [Run #10（push）](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43380337911)、[Run #11（pull_request）](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43380343098)，均 **success**；两者均对应同一代码提交 |
+| 测试与构建结论 | Flutter 3.47.9 / Dart 3.13.7 / engine `9e025265bef30b838c0c1b68cad19decf97048f2`；原 Android 补丁链、lockfile 检查、`flutter analyze --no-fatal-infos`、`flutter test`（41/41）及 Android dev APK 构建、产物上传通过 |
+| 构建证据 | [Run #10 的 APK artifact](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43380337911/artifacts/14017520193)：ARMv7、ARM64、x86_64 三种 APK；开发构建使用仓库已有的开发签名回退，不涉及生产签名或发布 |
+| Gate G0 | **未通过**：全仓入口台账 P0-09/10 尚未完成；P0-01/04 和实机 P0-11—14 仍待完成或取证。P1 不得据此提前开工 |
+| 最近一次文档一致性检查 | 本轮编辑前，开发分支 `spec.md` 的 Git blob `f8de30659ad249714674800c539a6b2b97e5fe41` 与 Library 原文件版本 `1` 的原始字节 SHA 完全一致；本轮双端更新结果按回读实况另行报告。 `main` 等待 PR #1 合并 |
+
+### 本轮故障、修复与验证
+
+- 先前 [Run #8](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43212602139) 和 [Run #9](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43212610355) 均在 `flutter test` 失败：39 项通过，`test/utils/accounts/deleted_account_test.dart` 的两项测试因测试账户未设置 `buvid`，Hive 序列化时访问尚未初始化的 `GStorage.setting`，抛出 `LateInitializationError`；APK 因前置失败而跳过。
+- 提交 `6d08421a` 只补齐测试数据。随后 push 与 PR 两次完整运行均通过 SDK/补丁/lockfile/analyze/test/build/upload。先前分析器的非致命诊断继续保留，`analyze` 步骤退出码为零不表示零诊断。
+- **已完成并有证据的 P0 TODO：** P0-02、P0-03、P0-05、P0-06、P0-07、P0-08。证据分别见 [冻结基线](docs/prism/baseline.md)、[场景台账](docs/prism/surface_inventory.md)、上述 Actions 日志与产物。本轮关联 R01/R02、T01；没有 Prism 功能集成或真机 Shader 成绩。
+- **正在执行/阻塞：** P0-01 需完成原始状态确认；P0-04 需建立/核实防止补丁重复执行的环境标记；P0-09/10 需按 `rg` 全面扩充稳定入口 ID、Navigator/返回值/滚动所有者；P0-11—14 缺少实际设备录像、截图与性能基线。所有这些 TODO 仍未勾选。
+- **下一轮准确入口：** 先完成 P0-09 / P0-10 的逐调用点清单并审查 P0-04 标记机制，然后取得 P0-11—14 的设备证据；仅在 G0 所有条件可核对后进入 P1。
 
 ## 1. 规范用法与完成定义
 
@@ -867,13 +890,13 @@ P0 → P1 → P2 → P3 → P4 构成首个可运行导航里程碑。P5、P6、
 **输出**：baseline.md、surface_inventory.md、初始测试/设备矩阵、可重现的原版构建。
 
 - [ ] **P0-01** 记录三个完整 SHA、FlClash submodule SHA、工作分支 base，确认不存在未保存用户改动。
-- [ ] **P0-02** 保存 SDK 3.47.9 的 `flutter --version`、Dart、engine revision；不以本机“最新 stable”替代。
-- [ ] **P0-03** 审核 `patch.ps1` 的 Flutter/material_ui/cupertino_ui 修改范围，在专属 SDK 与 PUB_CACHE 下执行原平台流程。
+- [x] **P0-02** 保存 SDK 3.47.9 的 `flutter --version`、Dart、engine revision；不以本机“最新 stable”替代。
+- [x] **P0-03** 审核 `patch.ps1` 的 Flutter/material_ui/cupertino_ui 修改范围，在专属 SDK 与 PUB_CACHE 下执行原平台流程。
 - [ ] **P0-04** 记录每项 patch 是否应用及失败原因；建立已打补丁的环境标记，避免缓存命中后重复 apply。
-- [ ] **P0-05** 对照 `pubspec.lock` 的 Git resolved-ref；读取锁定 media_kit_video 的平台 renderer 实现，形成媒体 layer 风险表。
-- [ ] **P0-06** 在未接入 Prism 的基线上运行现有 analyze/test 与 Android dev 构建，保存现存失败/警告清单及完整命令。
-- [ ] **P0-07** 验证当前 workflow 的触发方式；现有 build.yml 的 pull_request 被注释，不把“创建 PR”当自动构建已执行。
-- [ ] **P0-08** 建立仅验证的 CI：pin SDK、应用补丁、依赖、analyze、tests、dev artifact；不使用 release tag，不需要发行签名，不触发发布。
+- [x] **P0-05** 对照 `pubspec.lock` 的 Git resolved-ref；读取锁定 media_kit_video 的平台 renderer 实现，形成媒体 layer 风险表。
+- [x] **P0-06** 在未接入 Prism 的基线上运行现有 analyze/test 与 Android dev 构建，保存现存失败/警告清单及完整命令。
+- [x] **P0-07** 验证当前 workflow 的触发方式；现有 build.yml 的 pull_request 被注释，不把“创建 PR”当自动构建已执行。
+- [x] **P0-08** 建立仅验证的 CI：pin SDK、应用补丁、依赖、analyze、tests、dev artifact；不使用 release tag，不需要发行签名，不触发发布。
 - [ ] **P0-09** 用 rg 清点菜单、Dialog、Switch、modal/persistent/video-side Sheet、视频/平台视图入口，登记路径、触发、返回值、Navigator、滚动所有者。
 - [ ] **P0-10** 为每个入口分配稳定台账 ID 和迁移阶段；v1 保留项必须注明理由及业务合同，不能只写“以后再说”。
 - [ ] **P0-11** 录制默认/自定义顺序、单项导航、重选、双击、返回首项、底栏隐藏、侧栏、未读的原版基线。
