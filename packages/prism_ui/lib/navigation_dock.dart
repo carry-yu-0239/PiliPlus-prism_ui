@@ -1263,12 +1263,14 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
     if (index == null) {
       return;
     }
+    final wasDragging = _dragging;
     _pressedIndex = null;
     _dragging = false;
     _dropping = true;
     _lens.springTo((commit ? index : _selectedIndex).toDouble(), _travelSpring);
     _dropLift();
-    if (commit) {
+    // Dragging back to the selected destination is not a deliberate reselect.
+    if (commit && !(wasDragging && index == _selectedIndex)) {
       _activate(index, feedback: !_dragHapticSent);
     }
   }

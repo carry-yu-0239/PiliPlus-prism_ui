@@ -20,7 +20,11 @@ class PiliPrismBridge extends StatelessWidget {
       TargetPlatform.android || TargetPlatform.iOS || TargetPlatform.fuchsia => true,
       _ => false,
     };
-    final prismTheme = _PrismThemeCache.of(materialTheme);
+    final appWeight = Pref.appFontWeight;
+    final prismTheme = _PrismThemeCache.of(
+      materialTheme,
+      appWeight == FontWeight.normal ? null : appWeight,
+    );
     // Until media surfaces are classified, the mixed root is never captured.
     final glass = PrismGlassPolicy.resolve(
       uiEnabled: Pref.prismUiEnabled,
@@ -64,11 +68,16 @@ class PiliPrismBridge extends StatelessWidget {
 /// ThemeData is immutable. Identity caching prevents unrelated root rebuilds
 /// (unread counters, service updates) from creating new Prism theme instances.
 abstract final class _PrismThemeCache {
-  static final Expando<p.ThemeData> _cache = Expando<p.ThemeData>();
+  static final Expando<Map<FontWeight?, p.ThemeData>> _cache =
+      Expando<Map<FontWeight?, p.ThemeData>>();
 
-  static p.ThemeData of(m.ThemeData theme) => _cache[theme] ??= _convert(theme);
+  static p.ThemeData of(m.ThemeData theme, FontWeight? override) =>
+      (_cache[theme] ??= <FontWeight?, p.ThemeData>{}).putIfAbsent(
+        override,
+        () => _convert(theme, override),
+      );
 
-  static p.ThemeData _convert(m.ThemeData theme) {
+  static p.ThemeData _convert(m.ThemeData theme, FontWeight? override) {
     final c = theme.colorScheme;
     return p.ThemeData(
       colorScheme: p.ColorScheme(
@@ -123,6 +132,7 @@ abstract final class _PrismThemeCache {
       platform: theme.platform,
       fontFamily: theme.textTheme.bodyMedium?.fontFamily,
       fontFamilyFallback: theme.textTheme.bodyMedium?.fontFamilyFallback,
+      fontWeightOverride: override,
       scaffoldBackgroundColor: theme.scaffoldBackgroundColor,
       visualDensity: p.VisualDensity(
         horizontal: theme.visualDensity.horizontal,

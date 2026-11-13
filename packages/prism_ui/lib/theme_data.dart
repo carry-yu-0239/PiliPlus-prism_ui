@@ -118,6 +118,7 @@ class ThemeData {
     TapTargetSize? tapTargetSize,
     Color? scaffoldBackgroundColor,
     ColorScheme? elevatedColorScheme,
+    FontWeight? fontWeightOverride,
   }) {
     final scheme =
         colorScheme ?? _defaultScheme(brightness ?? Brightness.light);
@@ -142,6 +143,7 @@ class ThemeData {
       scaffoldBackgroundColor:
           scaffoldBackgroundColor ?? SurfaceLevel.page.colorOf(scheme),
       elevatedColorScheme: elevatedColorScheme,
+      fontWeightOverride: fontWeightOverride,
     );
   }
 
@@ -154,6 +156,7 @@ class ThemeData {
     required this.tapTargetSize,
     required this.scaffoldBackgroundColor,
     required this.elevatedColorScheme,
+    required this.fontWeightOverride,
   });
 
   static final _fallbacks = <TargetPlatform, ThemeData>{};
@@ -168,6 +171,8 @@ class ThemeData {
 
   /// What sheets present with, where it differs: `.agents/surfaces.md`.
   final ColorScheme? elevatedColorScheme;
+  /// Null keeps every original Prism text tier; non-null is absolute.
+  final FontWeight? fontWeightOverride;
 
   Brightness get brightness => colorScheme.brightness;
 
@@ -213,6 +218,7 @@ class ThemeData {
     TapTargetSize? tapTargetSize,
     Color? scaffoldBackgroundColor,
     ColorScheme? elevatedColorScheme,
+    FontWeight? fontWeightOverride,
   }) {
     final scheme = colorScheme ?? this.colorScheme;
     return ThemeData(
@@ -226,6 +232,7 @@ class ThemeData {
           scaffoldBackgroundColor ??
           (colorScheme == null ? this.scaffoldBackgroundColor : null),
       elevatedColorScheme: elevatedColorScheme ?? this.elevatedColorScheme,
+      fontWeightOverride: fontWeightOverride ?? this.fontWeightOverride,
     );
   }
 }

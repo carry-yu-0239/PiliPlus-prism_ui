@@ -1,5 +1,6 @@
 import 'package:PiliPlus/prism/navigation_adapter.dart';
 import 'package:PiliPlus/prism/preferences.dart';
+import 'package:PiliPlus/prism/glass_policy.dart';
 import 'package:flutter/widgets.dart';
 import 'package:material_ui/material_ui.dart' as m;
 import 'package:prism_ui/prism_ui.dart' as prism;
@@ -47,9 +48,18 @@ class _PrismPreviewPageState extends State<PrismPreviewPage> {
   Widget build(BuildContext context) {
     final available = prism.LiquidGlassShaders.rendererSupported;
     final shaderState = prism.LiquidGlassShaders.state.value;
-    final enabled = available &&
-        _mode != PrismGlassMode.off &&
-        shaderState == prism.LiquidGlassShaderLoadState.ready;
+    final policy = PrismGlassPolicy.resolve(
+      uiEnabled: true, // isolated preview is opt-in independently of the root
+      requested: _mode,
+      rendererSupported: available,
+      shaderState: shaderState,
+      unsafeSurface: false, // only inert colored widgets are below this Host
+      unsafeTransition: false,
+      appVisible: WidgetsBinding.instance.lifecycleState !=
+          AppLifecycleState.paused,
+      highContrast: MediaQuery.highContrastOf(context),
+    );
+    final enabled = policy.enabled;
     final prismColor = prism.ColorScheme.of(context);
     final materialColor = m.ColorScheme.of(context);
     return m.Scaffold(
@@ -87,9 +97,7 @@ class _PrismPreviewPageState extends State<PrismPreviewPage> {
           Expanded(
             child: prism.LiquidGlassScope(
               enabled: enabled,
-              quality: _mode == PrismGlassMode.ultra
-                  ? prism.LiquidGlassQuality.ultra
-                  : prism.LiquidGlassQuality.standard,
+              quality: policy.quality,
               child: prism.LiquidGlassHost(
                 enabled: enabled,
                 child: Stack(

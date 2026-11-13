@@ -10,6 +10,9 @@ import 'package:PiliPlus/models/common/nav_bar_config.dart';
 import 'package:PiliPlus/pages/home/view.dart';
 import 'package:PiliPlus/pages/main/controller.dart';
 import 'package:PiliPlus/prism/navigation_adapter.dart';
+import 'package:PiliPlus/prism/root_tab_host.dart';
+import 'package:PiliPlus/prism/preferences.dart';
+import 'package:prism_ui/prism_ui.dart' as prism;
 import 'package:PiliPlus/utils/storage_pref.dart';
 import 'package:PiliPlus/utils/android/bindings.g.dart';
 import 'package:PiliPlus/utils/app_scheme.dart';
@@ -323,7 +326,21 @@ class _MainAppState extends PopScopeState<MainApp>
   @override
   Widget build(BuildContext context) {
     Widget child;
-    if (_mainController.mainTabBarView) {
+    if (Pref.prismUiEnabled) {
+      child = Obx(
+        () => PrismRootTabHost(
+          destinations: _mainController.navigationBars,
+          selectedIndex: _mainController.selectedIndex.value,
+          transition: Pref.prismRootTransition == PrismRootTransition.inherit
+              ? (_mainController.mainTabBarView
+                  ? PrismRootTransition.slide
+                  : PrismRootTransition.none)
+              : Pref.prismRootTransition,
+          reduceMotion: prism.PrismMotionScope.reduceMotionOf(context),
+          vertical: !_mainController.useBottomNav,
+        ),
+      );
+    } else if (_mainController.mainTabBarView) {
       child = TabBarView(
         controller: _mainController.controller,
         physics: const NeverScrollableScrollPhysics(),

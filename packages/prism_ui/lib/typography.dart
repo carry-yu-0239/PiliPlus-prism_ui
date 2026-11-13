@@ -36,6 +36,7 @@ enum AppTextStyle {
     return _apply(
       size < title3.size ? theme.bodyTextStyle : theme.displayTextStyle,
       emphasized: emphasized,
+      fontWeightOverride: theme.fontWeightOverride,
     );
   }
 
@@ -53,15 +54,15 @@ enum AppTextStyle {
     return base.copyWith(
       fontSize: size,
       height: leading / size,
-      fontWeight: weight,
+      fontWeight: theme.fontWeightOverride ?? weight,
       letterSpacing: 0,
     );
   }
 
-  TextStyle _apply(TextStyle base, {required bool emphasized}) => base.copyWith(
+  TextStyle _apply(TextStyle base, {required bool emphasized, FontWeight? fontWeightOverride}) => base.copyWith(
     fontSize: size,
     height: leading / size,
-    fontWeight: emphasized ? emphasizedWeight : weight,
+    fontWeight: fontWeightOverride ?? (emphasized ? emphasizedWeight : weight),
     letterSpacing: 0,
   );
 }
