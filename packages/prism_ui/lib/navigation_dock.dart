@@ -987,6 +987,9 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
   void didUpdateWidget(covariant FloatingNavigationBar oldWidget) {
     super.didUpdateWidget(oldWidget);
     _syncParallax();
+    for (final parallax in _parallax) {
+      parallax.reduceMotion = context.disableAnimations;
+    }
     _leanContent();
     final rest = _lensRest;
     if (_pressedIndex == null && _lens.target != rest) {
@@ -1054,7 +1057,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
       _parallax.removeLast().dispose();
     }
     while (_parallax.length < count) {
-      _parallax.add(_Spring(this, 0)..reduceMotion = context.disableAnimations);
+      _parallax.add(_Spring(this, 0));
     }
   }
 
