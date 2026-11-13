@@ -14,6 +14,9 @@ LoginAccount _account() => LoginAccount(
   }),
   'access-key',
   'refresh-token',
+  // Avoid reading app-wide Pref.buvid in an isolated account-deletion test.
+  null,
+  'test-buvid',
 );
 
 void main() {
