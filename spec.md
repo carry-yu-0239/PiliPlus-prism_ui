@@ -92,6 +92,21 @@
 - **文档同步要求**：此新增记录属于原始 `spec.md`，写入 GitHub P1 分支后必须使用 Library 同一稳定文件 ID 原位覆盖，比较全文 blob SHA；main 等待 PR 合并。
 
 
+### 2026-11-13 P0 验收补齐与 P1 主题捕获阶段性交接
+
+> 本条为增量实施记录；截至写入时，新提交的完整 Flutter CI 仍在执行，所有未完成验收保持原 TODO `[ ]`，G0/G1 均未通过。前述历史进度表中的旧 PR/分支描述应以本条和实际 GitHub 状态为准。
+
+- **分支与合并状态**：PR [#1](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/1) 和 [#2](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/2) 已合并 `main`；当前代码在 `feat/prism-p1-integration` 的 Draft [PR #3](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/3)，**尚未合入 main**。这轮 `main` push CI 触发修复只存在于 PR #3，必须待合并后实际验证 main。
+- **已有可复用验证**：[Run 43396636989](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43396636989) 为成功的应用分析、应用测试、Prism 包测试和 Android 开发 APK 运行；[Run 43401660291](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43401660291) 与 [Run 43401651301](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43401651301) 也为成功（尚未含新包级 analyze 与本轮补丁）。不得用旧运行代替本轮验证。
+- **P0-04 实际提交（待新 CI 验证）**：[`90f7645a`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/90f7645ab33bfa8e0d9c88d97fb5942d71b33d36)、[`40d3ec35`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/40d3ec355dd7a6b7cbb20575e1b3a72a49ef9aba) 新增 `lib/scripts/patch_guard.ps1`，要求独立 Runner SDK/PUB_CACHE、Flutter Git revision、SDK Git diff、补丁输入指纹、受补丁包内容指纹、lockfile SHA；仅在首次成功且 lockfile 不漂移后原子写状态标记；重入时验证/跳过；标记不符、污染环境或失败路径 fail-closed，保留原始 `patch.ps1` 语义。[`a2e99087`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/a2e99087d5426663eb35da46d3553d83d0d43d2a) 将重复调用与故意损坏标记的负例接入 Actions。以上仅在 CI 真正通过后才能用于勾选。
+- **CI 扩展**：[`ddccfdc0`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/ddccfdc073a565b4a8f0b74306fa0d2fc5fc2a98) 和后续提交加入 `main` push 触发、单独 `packages/prism_ui flutter analyze --no-fatal-infos`，保留 Flutter 3.47.9、原 Android 补丁、受控 cache、应用 analyze/test、Prism 包 test 和 APK。包级 analyze 的零退出码不等于没有任何非致命诊断。
+- **P0-09/P0-10 全仓检索证据**：[`d9378cae`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/d9378cae7526e0e6218bca0e3a593d237ecaf958) 加入独立 `surface-audit` job。首次运行因 Ubuntu 26.04 Runner 无 `rg` 失败，已于[`c4dd77a7`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/c4dd77a714a5c7268f6e1136a3e99c89e65accf8) 显式安装 ripgrep 后修复。[Run 43406526657](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43406526657) 的审计 job 成功并产出行号原始 artifact，**1,154 候选行、245 文件**，其中含非 UI 与生成代码误命中。[入口台账](docs/prism/surface_inventory.md) 新增原始检索证据、遗漏的播放器/直播/图库/WebView/LocalHistoryEntry 类别以及保留合同。尚需逐真实调用点补稳定 ID/回调/返回/Navigator/滚动所有者、关联迁移阶段并回查漏项，**P0-09/10 不得提前勾选**。
+- **VP-07 / P1-17 实际补丁（待编译与行为验证）**：[`fa2836fa`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/fa2836fa2a09e1ce78df88c935b2ffc1acbb01a9) 至 [`16bf32e0`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/16bf32e08251beddb226dd08c68b731a5b8d3b83) 增加调用源 `InheritedTheme.capture(from:...,to:targetNavigator.context)`，覆盖原生 AnchoredPopup、Alert、SnapSheet、FormSheet 和 SideSheet 源主题，外层材质/过渡在主题包装上下文计算；原 `GetX` 导航、回调、Future 结果与标准动效参数保持。[ `d5f26a72`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/d5f26a72af26943c828da5494a40be77c8d63832) 新增 `test/prism/mixed_app_harness_test.dart`，在真实 `GetMaterialApp`+ `PiliPrismBridge` 中验证局部深色主题下 Alert/Popup/Sheet 和结果返回；尚需 Actions 实测、主题运行时变化、Off/reduced 与嵌套 Navigator 边界验证。
+- **VP-01 / VP-02**：已有 Dock 回调/徽标/触觉与 `PrismMotionScope` 的初步接入。本轮尚无新增完整 touch/keyboard/semantics 和动画清理的包级验收，继续保持未完成；未改变上游弹簧/Shader。
+- **当前 Gate**：G0 **未通过**（P0-01/04/09/10 与设备 P0-11—14 待核验）；G1 **未通过**（VP-01/02/07 和 P1-14/17 的自动测试/行为与未覆盖条件）。GPU、真机、120 Hz、PiP 均没有本轮新证据。
+- **本轮最新 CI 入口**：[Actions workflow runs](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/workflows/prism-verify.yml)；在本记录写入时最新代码为 [`9c03d2a0`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/9c03d2a0cd0368450dc3852240c72616685841b0)，完整 CI 尚未取得最终结论，应回读对应最新 SHA 的运行/job/step/log，不引用被新 push 取消的运行宣称失败或成功。
+- **下一轮准确入口**：① 读取最新完整 Actions，修复 patch guard、VP-07 和 mixed harness 的任何真实编译/测试失败并再次验收；② P0-09/10 从 artifact 完整逐项映射稳定 ID；③ VP-01 补多输入事件/反馈唯一性包+应用测试，VP-02 补 Dock/ElasticPress/Popup/Alert/SnapSheet 运行时 reduced 与 ticker 清理测试；④ P1-14/17 补嵌套 Navigator、局部主题/Off/Reduced 动态切换和取消/焦点结果断言；⑤ G0/G1 所需设备观察继续等待实际证据。禁止因本记录提前勾选任一 TODO。
+
 ## 1. 规范用法与完成定义
 
 ### 1.1 本文中的三种陈述
