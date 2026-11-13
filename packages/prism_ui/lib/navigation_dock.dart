@@ -168,6 +168,15 @@ class _Spring extends ChangeNotifier implements ValueListenable<double> {
   SpringDescription? _spring;
   double _now = 0;
   double _start = 0;
+  bool _reduceMotion = false;
+
+  /// Stops an in-flight ticker and lands on the latest target when the system
+  /// or user enables reduced motion, without changing standard spring values.
+  set reduceMotion(bool value) {
+    if (_reduceMotion == value) return;
+    _reduceMotion = value;
+    if (value && _simulation != null) jumpTo(_target);
+  }
 
   @override
   double get value => _value;
@@ -186,6 +195,10 @@ class _Spring extends ChangeNotifier implements ValueListenable<double> {
   }
 
   void springTo(double target, SpringDescription spring) {
+    if (_reduceMotion) {
+      if (_value != target || _simulation != null) jumpTo(target);
+      return;
+    }
     _simulation = SpringSimulation(
       spring,
       _value,
@@ -549,6 +562,15 @@ class _ElasticPressState extends State<ElasticPress>
   void initState() {
     super.initState();
     _lift.addListener(_settle);
+  }
+
+  @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduced = context.disableAnimations;
+    for (final spring in [_lift, _hover, _pullX, _pullY]) {
+      spring.reduceMotion = reduced;
+    }
   }
 
   @override
@@ -973,6 +995,18 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
   }
 
   @override
+  void didChangeDependencies() {
+    super.didChangeDependencies();
+    final reduced = context.disableAnimations;
+    for (final spring in [
+      _lens, _lift, _hover, _hoverShow, _swell, _stretch, _jelly,
+      _glow, _glowSpread, ..._parallax,
+    ]) {
+      spring.reduceMotion = reduced;
+    }
+  }
+
+  @override
   void dispose() {
     for (final parallax in _parallax) {
       parallax.dispose();
@@ -1020,7 +1054,7 @@ class _FloatingNavigationBarState extends State<FloatingNavigationBar>
       _parallax.removeLast().dispose();
     }
     while (_parallax.length < count) {
-      _parallax.add(_Spring(this, 0));
+      _parallax.add(_Spring(this, 0)..reduceMotion = context.disableAnimations);
     }
   }
 
