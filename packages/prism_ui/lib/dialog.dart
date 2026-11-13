@@ -718,7 +718,7 @@ class _AlertAction extends StatelessWidget {
               ? AppTextStyle.body.of(context, emphasized: true)
               : AppTextStyle.body
                     .of(context)
-                    .copyWith(fontWeight: FontWeight.w500),
+                    .copyWith(fontWeight: Theme.of(context).resolveFontWeight(FontWeight.w500)),
           minimumSize: const Size(0, _actionHeight),
           padding: const EdgeInsets.symmetric(horizontal: 16),
           visualDensity: VisualDensity.standard,

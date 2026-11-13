@@ -176,6 +176,10 @@ class ThemeData {
 
   Brightness get brightness => colorScheme.brightness;
 
+  /// Resolves an absolute app-wide weight while preserving Prism defaults.
+  FontWeight resolveFontWeight(FontWeight original) =>
+      fontWeightOverride ?? original;
+
   IconThemeData get iconTheme => IconThemeData(
     color: brightness == Brightness.dark
         ? Colors.white
