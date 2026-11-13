@@ -15,6 +15,35 @@ concurrency:
   cancel-in-progress: true
 
 jobs:
+  surface-audit:
+    name: Full repository UI entrypoint inventory evidence
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Generate full matching callsite inventory
+        shell: bash
+        run: |
+          set -euo pipefail
+          mkdir -p docs/prism/verification/ci
+          rg --line-number --column --no-heading \
+            'PopupMenuButton|showMenu[<(]|showDialog[<(]|Get\.dialog|SmartDialog\.show|Switch[<(]|showModalBottomSheet|showBottomSheet|BottomSheet_|showGeneralDialog|showCupertinoDialog|showAdaptiveDialog|Get\.bottomSheet|persistentFooterButtons|OverlayEntry|Navigator\.of|LocalHistoryEntry|InAppWebView|WebViewWidget|PlatformView|AndroidView|UiKitView|Texture[<(]|Video[<(]|show.*Sheet|show.*Popup' \
+            lib --glob '*.dart' \
+            > docs/prism/verification/ci/ui_entrypoints.rg.txt || {
+              echo "::error::Source audit failed or returned no matches"
+              exit 1
+            }
+          wc -l docs/prism/verification/ci/ui_entrypoints.rg.txt
+          cut -d: -f1 docs/prism/verification/ci/ui_entrypoints.rg.txt | sort -u | wc -l
+          sha256sum docs/prism/verification/ci/ui_entrypoints.rg.txt
+          cat docs/prism/verification/ci/ui_entrypoints.rg.txt
+      - name: Upload source audit matches for manual ID mapping
+        uses: actions/upload-artifact@v4
+        with:
+          name: prism-ui-entrypoint-raw-${{ github.sha }}
+          path: docs/prism/verification/ci/ui_entrypoints.rg.txt
+          if-no-files-found: error
+          retention-days: 14
+
   android-dev:
     name: Flutter 3.47.9 baseline and Android dev APK
     runs-on: ubuntu-latest
