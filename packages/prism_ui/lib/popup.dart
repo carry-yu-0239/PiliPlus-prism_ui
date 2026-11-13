@@ -155,6 +155,7 @@ class AnchoredPopupRoute<T> extends PopupRoute<T> {
     this.bareSource = false,
     this.modal = true,
     this.avoid,
+    this.capturedThemes,
   }) : super(requestFocus: modal ? null : false);
 
   final WidgetBuilder builder;
@@ -182,6 +183,10 @@ class AnchoredPopupRoute<T> extends PopupRoute<T> {
 
   /// A rect the popup keeps clear of when there is room above or below it.
   final Rect? avoid;
+
+  /// Inherited themes from the originating context, captured at route push.
+  /// Non-theme runtime policies (motion, glass, lifecycle) remain live.
+  final CapturedThemes? capturedThemes;
 
   @override
   final String? barrierLabel;
@@ -317,14 +322,19 @@ class AnchoredPopupRoute<T> extends PopupRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    if (elevated) {
-      return ElevatedSurfaceTheme(
-        child: Builder(
-          builder: (context) => _buildPopup(context, animation, child),
-        ),
-      );
-    }
-    return _buildPopup(context, animation, child);
+    final transition = Builder(
+      builder: (themedContext) {
+        if (elevated) {
+          return ElevatedSurfaceTheme(
+            child: Builder(
+              builder: (surfaceContext) => _buildPopup(surfaceContext, animation, child),
+            ),
+          );
+        }
+        return _buildPopup(themedContext, animation, child);
+      },
+    );
+    return capturedThemes?.wrap(transition) ?? transition;
   }
 
   Widget _buildPopup(
@@ -1572,7 +1582,9 @@ class _PopupAnchorState extends State<PopupAnchor> {
       return;
     }
     final snapshot = ValueNotifier<ui.Image?>(null);
+    final navigator = Navigator.of(context);
     final route = _route = AnchoredPopupRoute<void>(
+      capturedThemes: InheritedTheme.capture(from: context, to: navigator.context),
       barrierLabel: UiLocalizations.of(context).close,
       builder: (context) => widget.popupBuilder(context),
       anchorOf: _sourceRect,
@@ -1582,7 +1594,7 @@ class _PopupAnchorState extends State<PopupAnchor> {
       sourceImage: snapshot,
       bareSource: widget.bare,
     );
-    Navigator.of(context).push(route);
+    navigator.push(route);
     void reveal() {
       if (mounted) {
         _sourceHidden.value = false;
