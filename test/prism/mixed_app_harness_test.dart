@@ -6,6 +6,7 @@ import 'package:PiliPlus/utils/storage.dart';
 import 'package:flutter/widgets.dart';
 import 'package:flutter_test/flutter_test.dart';
 import 'package:get/get.dart' as gx;
+import 'package:flutter_smart_dialog/flutter_smart_dialog.dart';
 import 'package:hive_ce/hive.dart';
 import 'package:material_ui/material_ui.dart' as m;
 import 'package:prism_ui/prism_ui.dart' as prism;
@@ -39,9 +40,12 @@ void main() {
       const PiliPrismLocalizationsDelegate(),
     ],
     home: m.Scaffold(body: Center(child: body)),
-    builder: (context, child) => PiliPrismBridge(
-      child: child ?? const SizedBox.shrink(),
+    builder: FlutterSmartDialog.init(
+      builder: (context, child) => PiliPrismBridge(
+        child: child ?? const SizedBox.shrink(),
+      ),
     ),
+    navigatorObservers: [FlutterSmartDialog.observer],
   );
 
   final localDark = prism.ThemeData(
