@@ -40,16 +40,16 @@
 | 最近两次正式验证 | [Run #10（push）](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43380337911)、[Run #11（pull_request）](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43380343098)，均 **success**；两者均对应同一代码提交 |
 | 测试与构建结论 | Flutter 3.47.9 / Dart 3.13.7 / engine `9e025265bef30b838c0c1b68cad19decf97048f2`；原 Android 补丁链、lockfile 检查、`flutter analyze --no-fatal-infos`、`flutter test`（41/41）及 Android dev APK 构建、产物上传通过 |
 | 构建证据 | [Run #10 的 APK artifact](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43380337911/artifacts/14017520193)：ARMv7、ARM64、x86_64 三种 APK；开发构建使用仓库已有的开发签名回退，不涉及生产签名或发布 |
-| Gate G0 | **未通过**：全仓入口台账 P0-09/10 尚未完成；P0-01/04 和实机 P0-11—14 仍待完成或取证。P1 已由用户单独批准提前实施，验收 Gate 仍未通过 |
-| 最近一次文档一致性检查 | 本轮编辑前，开发分支 `spec.md` 的 Git blob `f8de30659ad249714674800c539a6b2b97e5fe41` 与 Library 原文件版本 `1` 的原始字节 SHA 完全一致；本轮双端更新结果按回读实况另行报告。 `main` 等待 PR #1 合并 |
+| Gate G0 | **未通过**：全仓入口台账 P0-09/10 尚未完成；P0-01 和实机 P0-11—14 仍待完成或取证。P1 已由用户单独批准提前实施，验收 Gate 仍未通过 |
+| 最近一次文档一致性检查 | 原始文档在当前开发分支与 Library 双端原位维护；当前精确版本和校验结果以最新交接记录及实际回读为准。`main` 等待 PR #3 合并 |
 
 ### 本轮故障、修复与验证
 
 - 先前 [Run #8](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43212602139) 和 [Run #9](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43212610355) 均在 `flutter test` 失败：39 项通过，`test/utils/accounts/deleted_account_test.dart` 的两项测试因测试账户未设置 `buvid`，Hive 序列化时访问尚未初始化的 `GStorage.setting`，抛出 `LateInitializationError`；APK 因前置失败而跳过。
 - 提交 `6d08421a` 只补齐测试数据。随后 push 与 PR 两次完整运行均通过 SDK/补丁/lockfile/analyze/test/build/upload。先前分析器的非致命诊断继续保留，`analyze` 步骤退出码为零不表示零诊断。
-- **已完成并有证据的 P0 TODO：** P0-02、P0-03、P0-05、P0-06、P0-07、P0-08。证据分别见 [冻结基线](docs/prism/baseline.md)、[场景台账](docs/prism/surface_inventory.md)、上述 Actions 日志与产物。本轮关联 R01/R02、T01；没有 Prism 功能集成或真机 Shader 成绩。
-- **正在执行/阻塞：** P0-01 需完成原始状态确认；P0-04 需建立/核实防止补丁重复执行的环境标记；P0-09/10 需按 `rg` 全面扩充稳定入口 ID、Navigator/返回值/滚动所有者；P0-11—14 缺少实际设备录像、截图与性能基线。所有这些 TODO 仍未勾选。
-- **下一轮准确入口：** 先完成 P0-09 / P0-10 的逐调用点清单并审查 P0-04 标记机制，然后取得 P0-11—14 的设备证据；仅在 G0 所有条件可核对后进入 P1。
+- **已完成并有证据的 P0 TODO：** P0-02、P0-03、P0-04、P0-05、P0-06、P0-07、P0-08。证据分别见 [冻结基线](docs/prism/baseline.md)、[场景台账](docs/prism/surface_inventory.md)、上述 Actions 日志与产物。本轮关联 R01/R02、T01；没有 Prism 功能集成或真机 Shader 成绩。
+- **正在执行/阻塞：** P0-01 需完成原始状态确认；P0-09/10 需按 `rg` 全面扩充稳定入口 ID、Navigator/返回值/滚动所有者；P0-11—14 缺少实际设备录像、截图与性能基线。所有这些 TODO 仍未勾选。
+- **下一轮准确入口：** 先完成 P0-09 / P0-10 的逐调用点清单，然后取得 P0-11—14 的设备证据；仅在 G0 所有条件可核对后进入 P1。
 
 
 ### 2026-11-13 用户批准的任务顺序变更：优先实施 P1
@@ -98,14 +98,26 @@
 
 - **分支与合并状态**：PR [#1](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/1) 和 [#2](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/2) 已合并 `main`；当前代码在 `feat/prism-p1-integration` 的 Draft [PR #3](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/3)，**尚未合入 main**。这轮 `main` push CI 触发修复只存在于 PR #3，必须待合并后实际验证 main。
 - **已有可复用验证**：[Run 43396636989](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43396636989) 为成功的应用分析、应用测试、Prism 包测试和 Android 开发 APK 运行；[Run 43401660291](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43401660291) 与 [Run 43401651301](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43401651301) 也为成功（尚未含新包级 analyze 与本轮补丁）。不得用旧运行代替本轮验证。
-- **P0-04 实际提交（待新 CI 验证）**：[`90f7645a`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/90f7645ab33bfa8e0d9c88d97fb5942d71b33d36)、[`40d3ec35`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/40d3ec355dd7a6b7cbb20575e1b3a72a49ef9aba) 新增 `lib/scripts/patch_guard.ps1`，要求独立 Runner SDK/PUB_CACHE、Flutter Git revision、SDK Git diff、补丁输入指纹、受补丁包内容指纹、lockfile SHA；仅在首次成功且 lockfile 不漂移后原子写状态标记；重入时验证/跳过；标记不符、污染环境或失败路径 fail-closed，保留原始 `patch.ps1` 语义。[`a2e99087`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/a2e99087d5426663eb35da46d3553d83d0d43d2a) 将重复调用与故意损坏标记的负例接入 Actions。以上仅在 CI 真正通过后才能用于勾选。
-- **CI 扩展**：[`ddccfdc0`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/ddccfdc073a565b4a8f0b74306fa0d2fc5fc2a98) 和后续提交加入 `main` push 触发、单独 `packages/prism_ui flutter analyze --no-fatal-infos`，保留 Flutter 3.47.9、原 Android 补丁、受控 cache、应用 analyze/test、Prism 包 test 和 APK。包级 analyze 的零退出码不等于没有任何非致命诊断。
-- **P0-09/P0-10 全仓检索证据**：[`d9378cae`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/d9378cae7526e0e6218bca0e3a593d237ecaf958) 加入独立 `surface-audit` job。首次运行因 Ubuntu 26.04 Runner 无 `rg` 失败，已于[`c4dd77a7`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/c4dd77a714a5c7268f6e1136a3e99c89e65accf8) 显式安装 ripgrep 后修复。[Run 43406526657](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43406526657) 的审计 job 成功并产出行号原始 artifact，**1,154 候选行、245 文件**，其中含非 UI 与生成代码误命中。[入口台账](docs/prism/surface_inventory.md) 新增原始检索证据、遗漏的播放器/直播/图库/WebView/LocalHistoryEntry 类别以及保留合同。尚需逐真实调用点补稳定 ID/回调/返回/Navigator/滚动所有者、关联迁移阶段并回查漏项，**P0-09/10 不得提前勾选**。
-- **VP-07 / P1-17 实际补丁（待编译与行为验证）**：[`fa2836fa`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/fa2836fa2a09e1ce78df88c935b2ffc1acbb01a9) 至 [`16bf32e0`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/16bf32e08251beddb226dd08c68b731a5b8d3b83) 增加调用源 `InheritedTheme.capture(from:...,to:targetNavigator.context)`，覆盖原生 AnchoredPopup、Alert、SnapSheet、FormSheet 和 SideSheet 源主题，外层材质/过渡在主题包装上下文计算；原 `GetX` 导航、回调、Future 结果与标准动效参数保持。[ `d5f26a72`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/d5f26a72af26943c828da5494a40be77c8d63832) 新增 `test/prism/mixed_app_harness_test.dart`，在真实 `GetMaterialApp`+ `PiliPrismBridge` 中验证局部深色主题下 Alert/Popup/Sheet 和结果返回；尚需 Actions 实测、主题运行时变化、Off/reduced 与嵌套 Navigator 边界验证。
+- **P0-04 实际提交（待新 CI 验证）**：[`90f7645a`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/90f7645a)、[`40d3ec35`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/40d3ec35) 新增 `lib/scripts/patch_guard.ps1`，要求独立 Runner SDK/PUB_CACHE、Flutter Git revision、SDK Git diff、补丁输入指纹、受补丁包内容指纹、lockfile SHA；仅在首次成功且 lockfile 不漂移后原子写状态标记；重入时验证/跳过；标记不符、污染环境或失败路径 fail-closed，保留原始 `patch.ps1` 语义。[`a2e99087`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/a2e99087) 将重复调用与故意损坏标记的负例接入 Actions。以上仅在 CI 真正通过后才能用于勾选。
+- **CI 扩展**：[`ddccfdc0`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/ddccfdc0) 和后续提交加入 `main` push 触发、单独 `packages/prism_ui flutter analyze --no-fatal-infos`，保留 Flutter 3.47.9、原 Android 补丁、受控 cache、应用 analyze/test、Prism 包 test 和 APK。包级 analyze 的零退出码不等于没有任何非致命诊断。
+- **P0-09/P0-10 全仓检索证据**：[`d9378cae`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/d9378cae) 加入独立 `surface-audit` job。首次运行因 Ubuntu 26.04 Runner 无 `rg` 失败，已于[`c4dd77a7`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/c4dd77a7) 显式安装 ripgrep 后修复。[Run 43406526657](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43406526657) 的审计 job 成功并产出行号原始 artifact，**1,154 候选行、245 文件**，其中含非 UI 与生成代码误命中。[入口台账](docs/prism/surface_inventory.md) 新增原始检索证据、遗漏的播放器/直播/图库/WebView/LocalHistoryEntry 类别以及保留合同。尚需逐真实调用点补稳定 ID/回调/返回/Navigator/滚动所有者、关联迁移阶段并回查漏项，**P0-09/10 不得提前勾选**。
+- **VP-07 / P1-17 实际补丁（待编译与行为验证）**：[`fa2836fa`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/fa2836fa) 至 [`16bf32e0`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/16bf32e0) 增加调用源 `InheritedTheme.capture(from:...,to:targetNavigator.context)`，覆盖原生 AnchoredPopup、Alert、SnapSheet、FormSheet 和 SideSheet 源主题，外层材质/过渡在主题包装上下文计算；原 `GetX` 导航、回调、Future 结果与标准动效参数保持。[ `d5f26a72`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/d5f26a72) 新增 `test/prism/mixed_app_harness_test.dart`，在真实 `GetMaterialApp`+ `PiliPrismBridge` 中验证局部深色主题下 Alert/Popup/Sheet 和结果返回；尚需 Actions 实测、主题运行时变化、Off/reduced 与嵌套 Navigator 边界验证。
 - **VP-01 / VP-02**：已有 Dock 回调/徽标/触觉与 `PrismMotionScope` 的初步接入。本轮尚无新增完整 touch/keyboard/semantics 和动画清理的包级验收，继续保持未完成；未改变上游弹簧/Shader。
 - **当前 Gate**：G0 **未通过**（P0-01/04/09/10 与设备 P0-11—14 待核验）；G1 **未通过**（VP-01/02/07 和 P1-14/17 的自动测试/行为与未覆盖条件）。GPU、真机、120 Hz、PiP 均没有本轮新证据。
-- **本轮最新 CI 入口**：[Actions workflow runs](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/workflows/prism-verify.yml)；在本记录写入时最新代码为 [`9c03d2a0`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/9c03d2a0cd0368450dc3852240c72616685841b0)，完整 CI 尚未取得最终结论，应回读对应最新 SHA 的运行/job/step/log，不引用被新 push 取消的运行宣称失败或成功。
+- **本轮最新 CI 入口**：[Actions workflow runs](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/workflows/prism-verify.yml)；在本记录写入时最新代码为 [`9c03d2a0`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/9c03d2a0)，完整 CI 尚未取得最终结论，应回读对应最新 SHA 的运行/job/step/log，不引用被新 push 取消的运行宣称失败或成功。
 - **下一轮准确入口**：① 读取最新完整 Actions，修复 patch guard、VP-07 和 mixed harness 的任何真实编译/测试失败并再次验收；② P0-09/10 从 artifact 完整逐项映射稳定 ID；③ VP-01 补多输入事件/反馈唯一性包+应用测试，VP-02 补 Dock/ElasticPress/Popup/Alert/SnapSheet 运行时 reduced 与 ticker 清理测试；④ P1-14/17 补嵌套 Navigator、局部主题/Off/Reduced 动态切换和取消/焦点结果断言；⑤ G0/G1 所需设备观察继续等待实际证据。禁止因本记录提前勾选任一 TODO。
+
+### 2026-11-13 P0/P1 本轮实测最终交接（最新）
+
+- **代码与合并状态**：`feat/prism-p1-integration` 的 Draft [PR #3](https://github.com/carry-yu-0239/PiliPlus-prism_ui/pull/3) 最新已验证代码 [`74d0b41c`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/74d0b41cc2b05825b2998d4465a599f7b7a2edf0)，尚未合入 `main`；PR #1 和 #2 已合并。
+- **完整 Actions 证据**：[Run 43409621615](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43409621615) **success**：Flutter 3.47.9 原补丁与受控 PUB_CACHE、lockfile 检查、应用级 analyze、**56/56 应用测试**、独立 Prism 包 analyze、**360/360 包测试**、Android 三 ABI APK 构建及 [artifact 14029622722](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43409621615/artifacts/14029622722) 上传均成功。检索 job 成功并上传 [原始匹配 artifact 14029435837](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43409621615/artifacts/14029435837)。APK 为 CI 开发验收产物，不是正式 Release 或实机测试。
+- **P0-04 验收完成**：`lib/scripts/patch_guard.ps1` 首次执行后写入 SDK、锁文件、补丁输入与缓存目标指纹；Flutter SDK revision `c197ca5199e9ee5661e865596c9c07294dfab51c`，lockfile SHA256 `C8F8D3FAF1508EC98E18CE7E82889FF6C0AF4A717ADA1627FDAEC939755C84E8`。Run 43409621615 的重复执行、`VerifyOnly`、损坏标记拒绝与恢复检查全部成功，原 `patch.ps1` 逐项记录 apply，异常保留失败日志，重入未执行破坏性补丁。对应 **P0-04 [x]**；其他未完成 P0 条目原样保留。
+- **P0-09/P0-10 仍未完成**：Actions 对 `lib` 全仓输出 1,154 候选行/245 文件。[`surface_inventory.md`](docs/prism/surface_inventory.md) 本轮又增加 **12 个源码核对的稳定 ID**，覆盖播放器控制、持久 Sheet/LocalHistoryEntry、图库、验证码、WebView、Overlay。原始匹配包含误报；尚未覆盖所有真实调用点及全部业务合同，两个 TODO 均维持 `[ ]`。
+- **VP-01 / VP-02 部分实现已获回归证据**：`navigation_dock_events_test.dart` 新增触摸、重选、取消拖动、徽标、语义、触觉禁用、运行时 reduced 和销毁测试；`navigation_dock.dart` 的原生 `_Spring` 处理运行时 reduced 并正确推迟依赖读取。失败 [Run 43408985813](https://github.com/carry-yu-0239/PiliPlus-prism_ui/actions/runs/43408985813) 暴露 `initState` 读取 MediaQuery，被 [`74d0b41c`](https://github.com/carry-yu-0239/PiliPlus-prism_ui/commit/74d0b41cc2b05825b2998d4465a599f7b7a2edf0) 最小修复，随后 360/360 通过。键盘、复杂拖动触觉时序与 Popup/Alert/SnapSheet 运行时中断仍缺完整覆盖，相关 TODO 未完成。
+- **P1-14 / P1-17 部分验证**：真实 `GetMaterialApp`、`PiliPrismBridge`、`FlutterSmartDialog` 的 `mixed_app_harness_test.dart` 已进入通过的 56 项应用测试；原生 Popup/Alert/SnapSheet/FormSheet/SideSheet 的 `InheritedTheme.capture` 保留局部 Prism Theme 与返回值。嵌套 Navigator、动态局部 Material Theme、弹层打开期间 Off/Reduced 切换、焦点与取消路径仍需补测，P1-14/17 保持 `[ ]`。
+- **CI 主分支触发**：`prism-verify.yml` 已添加 `main` push 和面向 `main` 的 PR 触发以及独立包级 analyze，当前仅存在未合并的 PR #3 分支；`main` push 的真实触发须待合并后检验。
+- **Gate**：**G0 未通过**（P0-01、P0-09/10、P0-11—14）；**G1 未通过**（VP-01/02/07 与 P1-14/17 仍有验收缺口）。Android 真机、GPU Shader 折射、PiP、120Hz 及平台视图组合无本轮设备证据。
+- **下一轮准确入口**：先处理 **P0-09/P0-10** 的剩余真实调用点与原始 artifact 交叉核对；并行完成 **P1-04 / P1-05（VP-01/02）** 键盘/触觉/所有动效入口边界测试，再完成 **P1-14/P1-17** 嵌套 Navigator 和动态主题/Off/Reduced/取消/焦点测试。设备专属 Gate 保留待验，不扩展 P5—P10。本次进度修改应在原 GitHub `spec.md` 与原 Library 文件原位回读后方可宣称同步成功。
 
 ## 1. 规范用法与完成定义
 
@@ -950,7 +962,7 @@ P0 → P1 → P2 → P3 → P4 构成首个可运行导航里程碑。P5、P6、
 - [ ] **P0-01** 记录三个完整 SHA、FlClash submodule SHA、工作分支 base，确认不存在未保存用户改动。
 - [x] **P0-02** 保存 SDK 3.47.9 的 `flutter --version`、Dart、engine revision；不以本机“最新 stable”替代。
 - [x] **P0-03** 审核 `patch.ps1` 的 Flutter/material_ui/cupertino_ui 修改范围，在专属 SDK 与 PUB_CACHE 下执行原平台流程。
-- [ ] **P0-04** 记录每项 patch 是否应用及失败原因；建立已打补丁的环境标记，避免缓存命中后重复 apply。
+- [x] **P0-04** 记录每项 patch 是否应用及失败原因；建立已打补丁的环境标记，避免缓存命中后重复 apply。
 - [x] **P0-05** 对照 `pubspec.lock` 的 Git resolved-ref；读取锁定 media_kit_video 的平台 renderer 实现，形成媒体 layer 风险表。
 - [x] **P0-06** 在未接入 Prism 的基线上运行现有 analyze/test 与 Android dev 构建，保存现存失败/警告清单及完整命令。
 - [x] **P0-07** 验证当前 workflow 的触发方式；现有 build.yml 的 pull_request 被注释，不把“创建 PR”当自动构建已执行。
