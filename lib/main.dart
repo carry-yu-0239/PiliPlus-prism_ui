@@ -335,6 +335,7 @@ class MyApp extends StatelessWidget {
     final uiScale = Pref.uiScale;
     final mediaQuery = MediaQuery.of(context);
     final textScaler = TextScaler.linear(Pref.defaultTextScale);
+    final navigatorSubtree = child!;
     if (uiScale != 1.0) {
       child = MediaQuery(
         data: mediaQuery.copyWith(
@@ -345,7 +346,7 @@ class MyApp extends StatelessWidget {
           viewPadding: tmpPadding ?? mediaQuery.viewPadding / uiScale,
           devicePixelRatio: mediaQuery.devicePixelRatio * uiScale,
         ),
-        child: Builder(builder: (context) => PiliPrismBridge(child: child!)),
+        child: Builder(builder: (context) => PiliPrismBridge(child: navigatorSubtree)),
       );
     } else {
       child = MediaQuery(
@@ -354,7 +355,7 @@ class MyApp extends StatelessWidget {
           padding: tmpPadding,
           viewPadding: tmpPadding,
         ),
-        child: Builder(builder: (context) => PiliPrismBridge(child: child!)),
+        child: Builder(builder: (context) => PiliPrismBridge(child: navigatorSubtree)),
       );
     }
     if (PlatformUtils.isDesktop) {

@@ -20,15 +20,15 @@ class PiliPrismBridge extends StatelessWidget {
     final prismTheme = _PrismThemeCache.of(materialTheme);
     return p.Theme(
       data: prismTheme,
-      child: IconTheme(
+      child: Builder(builder: (prismContext) => IconTheme(
         data: oldIconTheme,
         child: p.ViewScope(
           size: size,
           isMobile: mobile,
           child: p.MeasureScope(
             measure: p.Measure.withTextScaler(
-              context,
-              MediaQuery.textScalerOf(context),
+              prismContext,
+              MediaQuery.textScalerOf(prismContext),
             ),
             child: p.PrismMotionScope(
               reduceMotion: MediaQuery.disableAnimationsOf(context),
@@ -41,7 +41,7 @@ class PiliPrismBridge extends StatelessWidget {
             ),
           ),
         ),
-      ),
+      )),
     );
   }
 }
