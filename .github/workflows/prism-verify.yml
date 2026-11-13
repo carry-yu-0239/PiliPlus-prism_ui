@@ -65,7 +65,8 @@ jobs:
           ./lib/scripts/patch_guard.ps1 -Platform android
           ./lib/scripts/patch_guard.ps1 -Platform android -VerifyOnly
           $state = Join-Path $env:RUNNER_TEMP "prism-android-patch-state.json"
-          $marker = Get-Content $state -Raw | ConvertFrom-Json
+          $originalMarker = Get-Content $state -Raw
+          $marker = $originalMarker | ConvertFrom-Json
           $marker.patchInputs = "invalid-patch-fingerprint"
           $marker | ConvertTo-Json -Depth 4 | Set-Content $state
           $expectedFailure = $false
@@ -74,11 +75,8 @@ jobs:
             Write-Host "Expected stale-marker failure: $_"
           }
           if (-not $expectedFailure) { throw "Corrupted patch marker was not rejected" }
-          $marker.patchInputs = (Get-FileHash -Algorithm SHA256 -LiteralPath "lib/scripts/patch_guard.ps1").Hash
-          # Restore the actual digest from the environment rather than assuming a hash format.
-          $marker.patchInputs = ((Get-Content $state -Raw | ConvertFrom-Json).patchInputs)
-          # A fresh marker is reconstructed by reading the original successful record artifact in this step.
-          # Validation after deliberate corruption is sufficient to prove fail-closed behavior.
+          $originalMarker | Set-Content $state
+          ./lib/scripts/patch_guard.ps1 -Platform android -VerifyOnly
       - name: Check patch and lockfile status
         shell: bash
         run: |
