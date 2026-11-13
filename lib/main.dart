@@ -8,6 +8,8 @@ import 'package:PiliPlus/common/widgets/route_aware_mixin.dart';
 import 'package:PiliPlus/common/widgets/scale_app.dart';
 import 'package:PiliPlus/common/widgets/scroll_behavior.dart';
 import 'package:PiliPlus/http/init.dart';
+import 'package:PiliPlus/prism/bridge.dart';
+import 'package:PiliPlus/prism/localizations.dart';
 import 'package:PiliPlus/models/common/theme/theme_color_type.dart';
 import 'package:PiliPlus/plugin/pl_player/utils/fullscreen.dart';
 import 'package:PiliPlus/router/app_pages.dart';
@@ -301,7 +303,10 @@ class MyApp extends StatelessWidget {
       theme: light,
       darkTheme: dark,
       themeMode: ThemeUtils.themeMode = Pref.themeMode,
-      localizationsDelegates: GlobalMaterialLocalizations.delegates,
+      localizationsDelegates: [
+        ...GlobalMaterialLocalizations.delegates,
+        const PiliPrismLocalizationsDelegate(),
+      ],
       locale: const Locale("zh", "CN"),
       fallbackLocale: const Locale("zh", "CN"),
       supportedLocales: const [Locale("zh", "CN"), Locale("en", "US")],
@@ -340,7 +345,7 @@ class MyApp extends StatelessWidget {
           viewPadding: tmpPadding ?? mediaQuery.viewPadding / uiScale,
           devicePixelRatio: mediaQuery.devicePixelRatio * uiScale,
         ),
-        child: child!,
+        child: Builder(builder: (context) => PiliPrismBridge(child: child!)),
       );
     } else {
       child = MediaQuery(
@@ -349,7 +354,7 @@ class MyApp extends StatelessWidget {
           padding: tmpPadding,
           viewPadding: tmpPadding,
         ),
-        child: child!,
+        child: Builder(builder: (context) => PiliPrismBridge(child: child!)),
       );
     }
     if (PlatformUtils.isDesktop) {

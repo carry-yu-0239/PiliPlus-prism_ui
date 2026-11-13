@@ -4,6 +4,7 @@ import 'package:flutter/widgets.dart';
 import 'package:prism_ui/color.dart';
 import 'package:prism_ui/inherited.dart';
 import 'package:prism_ui/metrics.dart';
+import 'package:prism_ui/motion_scope.dart';
 import 'package:prism_ui/theme_data.dart';
 import 'package:prism_ui/typography.dart';
 import 'package:prism_ui/view_scope.dart';
@@ -47,7 +48,8 @@ extension BuildContextExtension on BuildContext {
 
   ColorScheme get colorScheme => Theme.of(this).colorScheme;
 
-  bool get disableAnimations => MediaQuery.disableAnimationsOf(this);
+  bool get disableAnimations =>
+      MediaQuery.disableAnimationsOf(this) || PrismMotionScope.reduceMotionOf(this);
 
   Duration motionDuration(Duration duration) =>
       disableAnimations ? Duration.zero : duration;

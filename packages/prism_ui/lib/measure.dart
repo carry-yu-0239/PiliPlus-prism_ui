@@ -16,6 +16,8 @@ class Measure {
   Measure.of(this.context, double textScaleFactor)
     : _textScaler = TextScaler.linear(textScaleFactor);
 
+  Measure.withTextScaler(this.context, this._textScaler);
+
   TextPainter _computeText(Text text, {double? maxWidth}) {
     return TextPainter(
       text: TextSpan(text: text.data, style: text.style),
@@ -23,7 +25,7 @@ class Measure {
       textScaler: _textScaler,
       ellipsis: '...',
       locale: Localizations.localeOf(context),
-      textDirection: text.textDirection ?? TextDirection.ltr,
+      textDirection: text.textDirection ?? Directionality.of(context),
     )..layout(maxWidth: maxWidth ?? double.infinity);
   }
 
@@ -41,7 +43,13 @@ class Measure {
   }
 
   _TextMeasureKey _measureKey(Text text, double? maxWidth) {
-    return (text.data, text.style, text.maxLines, text.textDirection, maxWidth);
+    return (
+      text.data,
+      text.style,
+      text.maxLines,
+      text.textDirection ?? Directionality.of(context),
+      maxWidth,
+    );
   }
 
   R _cached<R extends Object>(

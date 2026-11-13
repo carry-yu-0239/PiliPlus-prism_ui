@@ -47,6 +47,7 @@ export 'measure.dart';
 export 'metrics.dart';
 export 'models.dart';
 export 'motion.dart';
+export 'motion_scope.dart';
 export 'navigation_dock.dart';
 export 'navigator.dart';
 export 'navigator_resizable.dart';
