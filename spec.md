@@ -897,6 +897,7 @@ P0 → P1 → P2 → P3 → P4 构成首个可运行导航里程碑。P5、P6、
 ## 14. P0—P10 详细开发 TODO
 
 ### P0 — 冻结基线、重现工具链和建立行为台账
+
 **目标**：先证明原应用可构建，并记录需要保留的行为；避免把原问题、环境问题、迁移回归混在一起。
 
 **输入**：本文固定提交、现有构建脚本和 lockfile。  
@@ -1600,6 +1601,7 @@ vendored包根目录另运行其pub get/analyze以及与VP补丁直接相关的�
 [F-TEST-DOCK]: https://github.com/chen08209/FlClash/blob/be84736605527034689c95bf27828ff27d912c5e/test/widgets/navigation_dock_test.dart
 [F-TEST-SHEET]: https://github.com/chen08209/FlClash/blob/be84736605527034689c95bf27828ff27d912c5e/test/widgets/snap_sheet_test.dart
 [D-SMART]: https://github.com/bggRGjQaUbCoE/flutter_smart_dialog/blob/5a1be84314e8c53efa3b7324cd8dc535fefe931a/lib/src/init_dialog.dart
+
 
 
 
