@@ -46,8 +46,10 @@ Future<T?> showFloatingDialog<T>({
   required Widget child,
   bool dismissible = true,
 }) {
-  return Navigator.of(context).push<T>(
+  final navigator = Navigator.of(context);
+  return navigator.push<T>(
     _AlertRoute<T>(
+      capturedThemes: InheritedTheme.capture(from: context, to: navigator.context),
       barrierColor: context.colorScheme.alertScrim,
       barrierDismissible: dismissible,
       barrierLabel: dismissible ? UiLocalizations.of(context).close : null,
@@ -69,7 +71,11 @@ class _AlertRoute<T> extends PopupRoute<T>
     required this.barrierDismissible,
     required this.barrierLabel,
     required this.builder,
+    this.capturedThemes,
   });
+
+  @override
+  final CapturedThemes? capturedThemes;
 
   @override
   final Color barrierColor;
@@ -98,6 +104,8 @@ class _AlertRoute<T> extends PopupRoute<T>
 
 /// Moves a route, and its barrier, as UIKit moves an alert.
 mixin AlertMotionRouteMixin<T> on PopupRoute<T> {
+  CapturedThemes? get capturedThemes => null;
+
   CurvedAnimation? _sprung;
 
   // The barrier fades on the spring both ways, where `barrierCurve` would
@@ -140,7 +148,8 @@ mixin AlertMotionRouteMixin<T> on PopupRoute<T> {
     Animation<double> secondaryAnimation,
     Widget child,
   ) {
-    return _AlertTransition(animation: _spring, child: child);
+    final transition = _AlertTransition(animation: _spring, child: child);
+    return capturedThemes?.wrap(transition) ?? transition;
   }
 
   @override
