@@ -134,6 +134,7 @@ Future<T?> _showBottomSheet<T>(
   final navigator = sheetNavigatorOf(context);
   return navigator.push(
     SnapSheetRoute<T>(
+      capturedThemes: InheritedTheme.capture(from: context, to: navigator.context),
       builder: (sheetContext, _) => builder(sheetContext),
       detents: props.detents,
       fitsContent: true,
@@ -234,6 +235,7 @@ Future<T?> showSnapSheet<T>(
       final navigator = sheetNavigatorOf(context);
       closed = navigator.push(
         SnapSheetRoute<T>(
+          capturedThemes: InheritedTheme.capture(from: context, to: navigator.context),
           builder: home,
           initialScrollOffset: initialScrollOffset,
           sheetBarrierColor: barrierColor,
