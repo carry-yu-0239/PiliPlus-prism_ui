@@ -52,8 +52,8 @@ function Get-InputFingerprint {
     return Get-Sha256Text ($entries -join [Environment]::NewLine)
 }
 function Get-SdkFingerprint {
-    $status = Get-GitValue @("-C", $flutterRoot, "status", "--porcelain=v1", "--untracked-files=no")
-    $diff = Get-GitValue @("-C", $flutterRoot, "diff", "--binary", "--no-ext-diff", "HEAD")
+    $status = Get-GitValue -arguments @("-C", $flutterRoot, "status", "--porcelain=v1", "--untracked-files=no")
+    $diff = Get-GitValue -arguments @("-C", $flutterRoot, "diff", "--binary", "--no-ext-diff", "HEAD")
     return Get-Sha256Text ($status + [Environment]::NewLine + $diff)
 }
 function Get-PackageDir([string]$pattern) {
@@ -87,7 +87,7 @@ function Get-PackageFingerprint([string]$packageDir, [string]$patchSubdir) {
     return Get-Sha256Text ($entries -join [Environment]::NewLine)
 }
 function Get-ObservedState {
-    $revision = Get-GitValue @("-C", $flutterRoot, "rev-parse", "HEAD")
+    $revision = Get-GitValue -arguments @("-C", $flutterRoot, "rev-parse", "HEAD")
     $material = Get-PackageDir "material_ui-*"
     $cupertino = Get-PackageDir "cupertino_ui-*"
     return [ordered]@{
@@ -135,7 +135,7 @@ if (Test-Path -LiteralPath $StateFile -PathType Leaf) {
 # A missing marker is only safe with a clean SDK checkout. The original Android
 # chain contains git reset --hard and package deletion, so never attempt repair
 # in-place after a partial or externally modified run.
-$initialStatus = Get-GitValue @("-C", $flutterRoot, "status", "--porcelain=v1", "--untracked-files=no")
+$initialStatus = Get-GitValue -arguments @("-C", $flutterRoot, "status", "--porcelain=v1", "--untracked-files=no")
 if ($initialStatus) {
     throw "Unmarked Flutter checkout is dirty. Recreate isolated environment before patching: $initialStatus"
 }
