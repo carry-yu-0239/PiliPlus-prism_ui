@@ -230,6 +230,11 @@ abstract final class SettingBoxKey {
   static const String systemProxyHost = 'systemProxyHost',
       systemProxyPort = 'systemProxyPort';
 
+  static const String prismUiEnabled = 'prismUiEnabled',
+      prismGlassMode = 'prismGlassMode',
+      prismMotionMode = 'prismMotionMode',
+      prismRootTransition = 'prismRootTransition';
+
   static const String themeMode = 'themeMode',
       defaultTextScale = 'textScale',
       appFontWeightV2 = 'appFontWeightV2',
